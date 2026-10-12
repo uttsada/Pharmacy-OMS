@@ -1,0 +1,8 @@
+{
+  "name": "PharmaOMS Case Study",
+  "description": "A web order management system that lets pharmacy staff serialize medicines after packaging, scan-verify items, and print compliant labels.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
