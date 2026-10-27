@@ -1,4 +1,23 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="description" content="A web order management system that lets pharmacy staff serialize medicines after packaging, scan-verify items, and print compliant labels."><meta property="og:title" content="PharmaOMS Case Study"><meta property="og:description" content="A web order management system that lets pharmacy staff serialize medicines after packaging, scan-verify items, and print compliant labels."><title>PharmaOMS Case Study</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="author" content="Kiki Novalia">
+<meta name="description" content="Product Owner case study: a pharmacy order management system that serializes medicine after it is already packed. Includes a working prototype, roadmap, backlog, acceptance criteria and Definition of Done.">
+<meta property="og:title" content="PharmaOMS Case Study — Kiki Novalia">
+<meta property="og:description" content="Product Owner case study with a working packing-station prototype: generate serial numbers, scan each item, print a compliant label.">
+<meta property="og:type" content="website">
+<style>
+:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0;font:14px system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+img{max-width:100%}
+[hidden]{display:none!important}
+</style>
+<title>PharmaOMS Case Study</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <style>
 /* Layout concept: a batch record. The case study reads as a stack of record sheets on cool label stock;
    the working prototype sits in the middle like the packing-station screen it imitates. */
@@ -362,7 +381,7 @@ p{margin:0}
 .story .tags{display:flex;gap:6px;align-items:center;justify-content:flex-end;flex-wrap:wrap}
 .tagb{font-family:var(--f-mono);font-size:.72rem;padding:2px 7px;border-radius:5px;border:1px solid var(--rule);white-space:nowrap}
 .pr-must{background:var(--accent-soft);color:var(--accent);border-color:transparent}
-.pr-should{background:var(--warn-soft);color:var(--warn)}
+.pr-should{background:var(--warn-soft);color:var(--warn);border-color:transparent}
 .pr-could{color:var(--muted)}
 
 /* ---------- Acceptance criteria ---------- */
@@ -390,10 +409,6 @@ p{margin:0}
 /* ---------- Authorship: watermark + copy deterrent ---------- */
 body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 input,textarea,select{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default}
-.wm{position:fixed;inset:-50%;z-index:45;pointer-events:none;transform:rotate(-24deg);background:var(--ink);opacity:.06;
-  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='160'%3E%3Cg font-family='Arial,Helvetica,sans-serif' font-size='20' font-weight='700' fill='black'%3E%3Ctext x='16' y='56'%3EKiki Novalia%3C/text%3E%3Ctext x='176' y='136'%3EKiki Novalia%3C/text%3E%3C/g%3E%3C/svg%3E");
-  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='160'%3E%3Cg font-family='Arial,Helvetica,sans-serif' font-size='20' font-weight='700' fill='black'%3E%3Ctext x='16' y='56'%3EKiki Novalia%3C/text%3E%3Ctext x='176' y='136'%3EKiki Novalia%3C/text%3E%3C/g%3E%3C/svg%3E");
-  -webkit-mask-repeat:repeat;mask-repeat:repeat;-webkit-mask-size:320px 160px;mask-size:320px 160px}
 .copy-note{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:50;background:var(--ink);color:var(--paper);padding:10px 18px;border-radius:999px;font-size:.88rem;font-weight:700;box-shadow:var(--shadow);max-width:calc(100% - 32px);text-align:center}
 .print-note{display:none}
 @media print{
@@ -436,6 +451,8 @@ footer .wrap{display:flex;gap:16px;flex-wrap:wrap;justify-content:space-between}
   .ruler .sprint{font-size:.62rem}
 }
 </style>
+</head>
+<body>
 
 <header class="top">
   <div class="wrap">
@@ -742,7 +759,6 @@ footer .wrap{display:flex;gap:16px;flex-wrap:wrap;justify-content:space-between}
   </div>
 </footer>
 
-<div class="wm" aria-hidden="true"></div>
 <div class="copy-note" id="copy-note" role="status" aria-live="polite" hidden></div>
 <p class="print-note">This portfolio by Kiki Novalia is available online only. Please contact the author for a copy.</p>
 
@@ -768,8 +784,7 @@ function dmCells(seedStr, n){
   return `<path d="${d}" fill="currentColor"/>`;
 }
 function dmSVG(seedStr, n = 16){ return `<svg viewBox="0 0 ${n} ${n}" shape-rendering="crispEdges" aria-hidden="true">${dmCells(seedStr, n)}</svg>`; }
-const heroDm = $('#hero-dm');
-if (heroDm) heroDm.innerHTML = dmCells('7KQ2M9XA4PLD', 18);
+$('#hero-dm').innerHTML = dmCells('7KQ2M9XA4PLD', 18);
 
 /* ---------- Reference data ---------- */
 const ROLES = ['Admin','Supervisor','Operator','Auditor'];
@@ -890,16 +905,13 @@ const STEPS = [
 ];
 function tick(k){ done.add(k); }
 function renderGuide(){
-  const glist = $('#g-list');
-  if (glist) glist.innerHTML = STEPS.map(([k, t, us]) => `<li class="${done.has(k) ? 'done' : ''}"><span>${esc(t)}<small>${us}</small></span></li>`).join('');
-  const gcount = $('#g-count');
-  if (gcount) gcount.textContent = `${done.size} of ${STEPS.length} done`;
-  const gbar = $('#g-bar');
-  if (gbar) gbar.style.width = (done.size / STEPS.length * 100) + '%';
+  $('#g-list').innerHTML = STEPS.map(([k, t, us]) => `<li class="${done.has(k) ? 'done' : ''}"><span>${esc(t)}<small>${us}</small></span></li>`).join('');
+  $('#g-count').textContent = `${done.size} of ${STEPS.length} done`;
+  $('#g-bar').style.width = (done.size / STEPS.length * 100) + '%';
 }
 
 let toastTimer;
-function toast(msg){ const t = $('#toast'); if (!t) return; t.textContent = msg; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 2600); }
+function toast(msg){ const t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 2600); }
 
 /* ---------- Icons ---------- */
 const ICON = {
@@ -1183,7 +1195,6 @@ function auditView(){
 /* ---------- Render ---------- */
 const app = $('#app');
 function render(){
-  if (!app) return;
   const ae = document.activeElement;
   const fid = ae && app.contains(ae) && ae.id ? ae.id : null;
   let sel = null; try { if (fid && typeof ae.selectionStart === 'number') sel = [ae.selectionStart, ae.selectionEnd]; } catch (e) {}
@@ -1193,7 +1204,7 @@ function render(){
   else if (fid) { const el = document.getElementById(fid); if (el) { el.focus({preventScroll: true}); try { if (sel) el.setSelectionRange(sel[0], sel[1]); } catch (e) {} } }
   renderGuide();
 }
-function goPaneTop(){ if (!app) return; const p = app.querySelector('.pane'); if (p) p.scrollTop = 0; }
+function goPaneTop(){ const p = app.querySelector('.pane'); if (p) p.scrollTop = 0; }
 
 /* ---------- Actions ---------- */
 function signIn(uRaw, p){
@@ -1219,7 +1230,7 @@ function signIn(uRaw, p){
 function setPath(path, v){ const [a, b] = path.split('.'); if (b) UI[a][b] = v; else UI[a] = v; }
 
 function openOrder(id){ UI.orderId = id; UI.screen = 'order'; UI.scan = null; UI.scanVal = ''; UI.reprintOpen = false; UI.reason = ''; UI.pq = ''; UI.lastAnim = UI.printTick;
-  const o = order(); if (o && o.status === 'In progress' && can('serialize')) UI.focusScan = true; render(); goPaneTop(); }
+  const o = order(); if (o.status === 'In progress' && can('serialize')) UI.focusScan = true; render(); goPaneTop(); }
 
 function processScan(o, raw){
   const c = raw.trim(); if (!c) return;
@@ -1246,126 +1257,123 @@ function processScan(o, raw){
   render();
 }
 
-if (app) {
-  app.addEventListener('click', ev => {
-    const el = ev.target.closest('[data-act]'); if (!el || !app.contains(el) || el.disabled) return;
-    const a = el.dataset.act, o = order();
-    switch (a) {
-      case 'quick': { const u = el.dataset.u; UI.login.u = u; signIn(u, PASSWORD); break; }
-      case 'logout': audit('Signed out', ''); UI.user = null; UI.screen = 'login'; UI.orderId = null; UI.panel = null; render(); break;
-      case 'nav': UI.screen = el.dataset.s; UI.orderId = null; UI.panel = null; render(); goPaneTop(); break;
-      case 'tab': UI.tab = el.dataset.t; render(); break;
-      case 'open': openOrder(el.dataset.id); break;
-      case 'panel': UI.panel = el.dataset.p || null; UI.newOrder.err = ''; UI.addUser.err = ''; render(); break;
-      case 'adduser': UI.panel = 'user'; UI.addUser = {name:'', id:'', role:'Operator', err:''}; render(); break;
-      case 'import': {
-        IMPORT_ROWS.forEach(r => S.orders.push(mkOrder(nextId(), r[0], r[1], 'New')));
-        audit('Orders imported', `orders_2026-10-11.csv, ${IMPORT_ROWS.length} orders`);
-        UI.panel = null; UI.tab = 'New'; render(); toast(`${IMPORT_ROWS.length} orders imported`); break;
-      }
-      case 'pend': { const g = el.dataset.g; UI.pending[g] = Math.max(1, Math.min(99, (UI.pending[g] || 1) + Number(el.dataset.d))); render(); break; }
-      case 'add': {
-        const g = el.dataset.g, n = UI.pending[g] || 1, c = o.cart.find(x => x.gtin === g);
-        if (c) c.qty = Math.min(999, c.qty + n); else o.cart.push({gtin: g, qty: n});
-        UI.pending[g] = 1; tick('cart'); render(); toast(`${n} × ${byGtin(g).name} added`); break;
-      }
-      case 'cart-q': { const c = o.cart.find(x => x.gtin === el.dataset.g); c.qty = Math.max(1, Math.min(999, c.qty + Number(el.dataset.d))); render(); break; }
-      case 'cart-rm': o.cart = o.cart.filter(x => x.gtin !== el.dataset.g); render(); break;
-      case 'confirm': {
-        if (!o.cart.length) break;
-        o.lines = o.cart.map(c => mkLine(c.gtin, c.qty)); const n = unitsOf(o); o.cart = []; o.status = 'In progress';
-        audit('Serials generated', `${n} serials reserved for ${o.id}`); tick('confirm');
-        UI.scan = null; UI.focusScan = true; render(); goPaneTop(); toast(`${n} unique serial numbers reserved`); break;
-      }
-      case 'scan-code': processScan(o, el.dataset.code); break;
-      case 'scan-all': {
-        let n = 0, lastS = null, lastG = null;
-        o.lines.forEach(l => l.serials.forEach(s => { if (s.status === 'Reserved') { s.status = 'Labeled'; n++; lastS = s; lastG = l.gtin; } }));
-        if (n) { o.last = {sn: lastS.sn, gtin: lastG}; UI.printTick++; audit('Label printed', `${n} units labeled with the demo shortcut · ${o.id}`); o.scans.unshift({t: clock(), ok: true, msg: `${n} units labeled (demo shortcut)`}); tick('scan-ok'); }
-        UI.scan = {ok:true, title:'All units labeled', detail:`${n} labels printed.`}; render(); break;
-      }
-      case 'rp-open': UI.reprintOpen = true; UI.reason = ''; render(); break;
-      case 'rp-cancel': UI.reprintOpen = false; UI.reason = ''; render(); break;
-      case 'reprint': {
-        if (!UI.reason) break;
-        const s = o.lines.find(x => x.gtin === o.last.gtin).serials.find(x => x.sn === o.last.sn);
-        s.reprints++; UI.printTick++;
-        audit('Label reprinted', `${s.sn} · ${UI.reason}`); o.scans.unshift({t: clock(), ok: true, msg: `Reprinted ${s.sn} · ${UI.reason.toLowerCase()}`});
-        tick('reprint'); UI.reprintOpen = false; UI.reason = ''; render(); toast('Label reprinted with the same serial'); break;
-      }
-      case 'send': {
-        if (labeledOf(o) !== unitsOf(o)) break;
-        o.status = 'Labeled'; audit('Sent for release', `${o.id}, ${unitsOf(o)} units`); tick('send');
-        render(); goPaneTop(); toast('Sent to the supervisor for release'); break;
-      }
-      case 'release': {
-        if (o.status !== 'Labeled' || !can('release')) break;
-        o.status = 'Released'; o.releasedBy = UI.user.name; o.releasedAt = clock().slice(0, 5);
-        audit('Order released', `${o.id}, ${unitsOf(o)} units`);
-        if (UI.user.role === 'Supervisor' && done.has('send')) tick('release');
-        render(); goPaneTop(); toast(`${o.id} released for shipping`); break;
-      }
-      case 'toggle-user': {
-        const u = S.users.find(x => x.id === el.dataset.id); if (!u || u.id === UI.user.id) break;
-        u.active = !u.active; audit(u.active ? 'User activated' : 'User deactivated', `${u.name} (${u.id})`);
-        render(); toast(`${u.name} ${u.active ? 'can sign in again' : 'can no longer sign in'}`); break;
-      }
+app.addEventListener('click', ev => {
+  const el = ev.target.closest('[data-act]'); if (!el || !app.contains(el) || el.disabled) return;
+  const a = el.dataset.act, o = order();
+  switch (a) {
+    case 'quick': { const u = el.dataset.u; UI.login.u = u; signIn(u, PASSWORD); break; }
+    case 'logout': audit('Signed out', ''); UI.user = null; UI.screen = 'login'; UI.orderId = null; UI.panel = null; render(); break;
+    case 'nav': UI.screen = el.dataset.s; UI.orderId = null; UI.panel = null; render(); goPaneTop(); break;
+    case 'tab': UI.tab = el.dataset.t; render(); break;
+    case 'open': openOrder(el.dataset.id); break;
+    case 'panel': UI.panel = el.dataset.p || null; UI.newOrder.err = ''; UI.addUser.err = ''; render(); break;
+    case 'adduser': UI.panel = 'user'; UI.addUser = {name:'', id:'', role:'Operator', err:''}; render(); break;
+    case 'import': {
+      IMPORT_ROWS.forEach(r => S.orders.push(mkOrder(nextId(), r[0], r[1], 'New')));
+      audit('Orders imported', `orders_2026-10-11.csv, ${IMPORT_ROWS.length} orders`);
+      UI.panel = null; UI.tab = 'New'; render(); toast(`${IMPORT_ROWS.length} orders imported`); break;
     }
-  });
-
-  app.addEventListener('keydown', ev => {
-    if (ev.key === 'Enter' && ev.target.matches('tr[data-act="open"]')) { ev.preventDefault(); openOrder(ev.target.dataset.id); }
-  });
-
-  app.addEventListener('input', ev => {
-    const el = ev.target;
-    if (el.dataset.bind) setPath(el.dataset.bind, el.value);
-    if (el.dataset.search) { UI[el.dataset.search] = el.value; render(); }
-  });
-
-  app.addEventListener('change', ev => {
-    const el = ev.target, a = el.dataset.actChange; if (!a) return;
-    if (a === 'reason') { UI.reason = el.value; render(); }
-    if (a === 'perm') {
-      const r = el.dataset.r, k = el.dataset.k; S.matrix[r][k] = el.checked;
-      const label = PERMS.find(p => p[0] === k)[1];
-      audit('Permission changed', `${r}: ${label} ${el.checked ? 'granted' : 'removed'}`);
-      if (UI.user.role === 'Admin') tick('perm');
-      render(); toast(`${r}: ${label.toLowerCase()} ${el.checked ? 'granted' : 'removed'}`);
+    case 'pend': { const g = el.dataset.g; UI.pending[g] = Math.max(1, Math.min(99, (UI.pending[g] || 1) + Number(el.dataset.d))); render(); break; }
+    case 'add': {
+      const g = el.dataset.g, n = UI.pending[g] || 1, c = o.cart.find(x => x.gtin === g);
+      if (c) c.qty = Math.min(999, c.qty + n); else o.cart.push({gtin: g, qty: n});
+      UI.pending[g] = 1; tick('cart'); render(); toast(`${n} × ${byGtin(g).name} added`); break;
     }
-    if (a === 'role') {
-      const u = S.users.find(x => x.id === el.dataset.id); const was = u.role; u.role = el.value;
-      audit('Role changed', `${u.name}: ${was} → ${u.role}`); render(); toast(`${u.name} is now ${u.role}`);
+    case 'cart-q': { const c = o.cart.find(x => x.gtin === el.dataset.g); c.qty = Math.max(1, Math.min(999, c.qty + Number(el.dataset.d))); render(); break; }
+    case 'cart-rm': o.cart = o.cart.filter(x => x.gtin !== el.dataset.g); render(); break;
+    case 'confirm': {
+      if (!o.cart.length) break;
+      o.lines = o.cart.map(c => mkLine(c.gtin, c.qty)); const n = unitsOf(o); o.cart = []; o.status = 'In progress';
+      audit('Serials generated', `${n} serials reserved for ${o.id}`); tick('confirm');
+      UI.scan = null; UI.focusScan = true; render(); goPaneTop(); toast(`${n} unique serial numbers reserved`); break;
     }
-  });
+    case 'scan-code': processScan(o, el.dataset.code); break;
+    case 'scan-all': {
+      let n = 0, lastS = null, lastG = null;
+      o.lines.forEach(l => l.serials.forEach(s => { if (s.status === 'Reserved') { s.status = 'Labeled'; n++; lastS = s; lastG = l.gtin; } }));
+      if (n) { o.last = {sn: lastS.sn, gtin: lastG}; UI.printTick++; audit('Label printed', `${n} units labeled with the demo shortcut · ${o.id}`); o.scans.unshift({t: clock(), ok: true, msg: `${n} units labeled (demo shortcut)`}); tick('scan-ok'); }
+      UI.scan = {ok:true, title:'All units labeled', detail:`${n} labels printed.`}; render(); break;
+    }
+    case 'rp-open': UI.reprintOpen = true; UI.reason = ''; render(); break;
+    case 'rp-cancel': UI.reprintOpen = false; UI.reason = ''; render(); break;
+    case 'reprint': {
+      if (!UI.reason) break;
+      const s = o.lines.find(x => x.gtin === o.last.gtin).serials.find(x => x.sn === o.last.sn);
+      s.reprints++; UI.printTick++;
+      audit('Label reprinted', `${s.sn} · ${UI.reason}`); o.scans.unshift({t: clock(), ok: true, msg: `Reprinted ${s.sn} · ${UI.reason.toLowerCase()}`});
+      tick('reprint'); UI.reprintOpen = false; UI.reason = ''; render(); toast('Label reprinted with the same serial'); break;
+    }
+    case 'send': {
+      if (labeledOf(o) !== unitsOf(o)) break;
+      o.status = 'Labeled'; audit('Sent for release', `${o.id}, ${unitsOf(o)} units`); tick('send');
+      render(); goPaneTop(); toast('Sent to the supervisor for release'); break;
+    }
+    case 'release': {
+      if (o.status !== 'Labeled' || !can('release')) break;
+      o.status = 'Released'; o.releasedBy = UI.user.name; o.releasedAt = clock().slice(0, 5);
+      audit('Order released', `${o.id}, ${unitsOf(o)} units`);
+      if (UI.user.role === 'Supervisor' && done.has('send')) tick('release');
+      render(); goPaneTop(); toast(`${o.id} released for shipping`); break;
+    }
+    case 'toggle-user': {
+      const u = S.users.find(x => x.id === el.dataset.id); if (!u || u.id === UI.user.id) break;
+      u.active = !u.active; audit(u.active ? 'User activated' : 'User deactivated', `${u.name} (${u.id})`);
+      render(); toast(`${u.name} ${u.active ? 'can sign in again' : 'can no longer sign in'}`); break;
+    }
+  }
+});
 
-  app.addEventListener('submit', ev => {
-    ev.preventDefault();
-    const f = ev.target.dataset.form, o = order();
-    if (f === 'login') signIn(UI.login.u, UI.login.p);
-    if (f === 'scan') processScan(o, UI.scanVal);
-    if (f === 'newOrder') {
-      const N = UI.newOrder;
-      if (!N.dest.trim()) { N.err = 'Enter a destination.'; return render(); }
-      if (!N.date) { N.err = 'Choose a requested delivery date.'; return render(); }
-      const id = nextId(); S.orders.push(mkOrder(id, N.dest.trim(), N.date, 'New'));
-      audit('Order created', `${id} for ${N.dest.trim()}`);
-      UI.newOrder = {dest:'', date:'2026-10-24', err:''}; UI.panel = null; UI.tab = 'All'; render(); toast(`Order ${id} created`);
-    }
-    if (f === 'addUser') {
-      const A = UI.addUser, id = A.id.trim().toLowerCase();
-      if (!A.name.trim()) { A.err = 'Enter the person’s full name.'; return render(); }
-      if (!/^[a-z0-9._-]{3,}$/.test(id)) { A.err = 'Use at least 3 characters for the username: letters, digits, dot, dash or underscore.'; return render(); }
-      if (S.users.some(u => u.id === id)) { A.err = `The username ${id} is already taken.`; return render(); }
-      S.users.push({id, name: A.name.trim(), role: A.role, active: true});
-      audit('User added', `${A.name.trim()} (${id}) as ${A.role}`);
-      UI.panel = null; render(); toast(`${A.name.trim()} added as ${A.role}`);
-    }
-  });
-}
+app.addEventListener('keydown', ev => {
+  if (ev.key === 'Enter' && ev.target.matches('tr[data-act="open"]')) { ev.preventDefault(); openOrder(ev.target.dataset.id); }
+});
 
-const resetBtn = $('#reset');
-if (resetBtn) resetBtn.addEventListener('click', () => { seed(); render(); toast('Demo reset'); });
+app.addEventListener('input', ev => {
+  const el = ev.target;
+  if (el.dataset.bind) setPath(el.dataset.bind, el.value);
+  if (el.dataset.search) { UI[el.dataset.search] = el.value; render(); }
+});
+
+app.addEventListener('change', ev => {
+  const el = ev.target, a = el.dataset.actChange; if (!a) return;
+  if (a === 'reason') { UI.reason = el.value; render(); }
+  if (a === 'perm') {
+    const r = el.dataset.r, k = el.dataset.k; S.matrix[r][k] = el.checked;
+    const label = PERMS.find(p => p[0] === k)[1];
+    audit('Permission changed', `${r}: ${label} ${el.checked ? 'granted' : 'removed'}`);
+    if (UI.user.role === 'Admin') tick('perm');
+    render(); toast(`${r}: ${label.toLowerCase()} ${el.checked ? 'granted' : 'removed'}`);
+  }
+  if (a === 'role') {
+    const u = S.users.find(x => x.id === el.dataset.id); const was = u.role; u.role = el.value;
+    audit('Role changed', `${u.name}: ${was} → ${u.role}`); render(); toast(`${u.name} is now ${u.role}`);
+  }
+});
+
+app.addEventListener('submit', ev => {
+  ev.preventDefault();
+  const f = ev.target.dataset.form, o = order();
+  if (f === 'login') signIn(UI.login.u, UI.login.p);
+  if (f === 'scan') processScan(o, UI.scanVal);
+  if (f === 'newOrder') {
+    const N = UI.newOrder;
+    if (!N.dest.trim()) { N.err = 'Enter a destination.'; return render(); }
+    if (!N.date) { N.err = 'Choose a requested delivery date.'; return render(); }
+    const id = nextId(); S.orders.push(mkOrder(id, N.dest.trim(), N.date, 'New'));
+    audit('Order created', `${id} for ${N.dest.trim()}`);
+    UI.newOrder = {dest:'', date:'2026-10-24', err:''}; UI.panel = null; UI.tab = 'All'; render(); toast(`Order ${id} created`);
+  }
+  if (f === 'addUser') {
+    const A = UI.addUser, id = A.id.trim().toLowerCase();
+    if (!A.name.trim()) { A.err = 'Enter the person’s full name.'; return render(); }
+    if (!/^[a-z0-9._-]{3,}$/.test(id)) { A.err = 'Use at least 3 characters for the username: letters, digits, dot, dash or underscore.'; return render(); }
+    if (S.users.some(u => u.id === id)) { A.err = `The username ${id} is already taken.`; return render(); }
+    S.users.push({id, name: A.name.trim(), role: A.role, active: true});
+    audit('User added', `${A.name.trim()} (${id}) as ${A.role}`);
+    UI.panel = null; render(); toast(`${A.name.trim()} added as ${A.role}`);
+  }
+});
+
+$('#reset').addEventListener('click', () => { seed(); render(); toast('Demo reset'); });
 
 seed(); render();
 
@@ -1395,20 +1403,16 @@ const STORIES = [
 let blFilter = 'All';
 function renderBacklog(){
   const opts = ['All','R1','R2','R3'], names = {All:'All', R1:'Release 1 · MVP', R2:'Release 2', R3:'Release 3'};
-  const blFilterEl = $('#bl-filter');
-  if (blFilterEl) blFilterEl.innerHTML = opts.map(o => `<button type="button" class="tab ${blFilter === o ? 'on' : ''}" data-f="${o}" aria-pressed="${blFilter === o}">${names[o]}<span class="n">${o === 'All' ? STORIES.length : STORIES.filter(s => s[7] === o).length}</span></button>`).join('');
+  $('#bl-filter').innerHTML = opts.map(o => `<button type="button" class="tab ${blFilter === o ? 'on' : ''}" data-f="${o}" aria-pressed="${blFilter === o}">${names[o]}<span class="n">${o === 'All' ? STORIES.length : STORIES.filter(s => s[7] === o).length}</span></button>`).join('');
   const list = STORIES.filter(s => blFilter === 'All' || s[7] === blFilter);
   const pts = list.reduce((a, s) => a + s[6], 0);
-  const blSumEl = $('#bl-sum');
-  if (blSumEl) blSumEl.textContent = `${list.length} stories · ${pts} points`;
-  const blListEl = $('#bl-list');
-  if (blListEl) blListEl.innerHTML = list.map(([id, epic, role, want, so, pr, sp, rel]) => `<div class="story">
+  $('#bl-sum').textContent = `${list.length} stories · ${pts} points`;
+  $('#bl-list').innerHTML = list.map(([id, epic, role, want, so, pr, sp, rel]) => `<div class="story">
     <div class="id">${id}<span>${epic}</span></div>
     <p>As ${/^[aeiou]/.test(role) ? 'an' : 'a'} <b>${role}</b>, I want to ${esc(want)}, so that ${esc(so)}.</p>
     <div class="tags"><span class="tagb pr-${pr.toLowerCase()}">${pr}</span><span class="tagb">${sp} pt</span><span class="tagb">${rel}</span></div></div>`).join('');
 }
-const blFilterBtn = $('#bl-filter');
-if (blFilterBtn) blFilterBtn.addEventListener('click', e => { const b = e.target.closest('[data-f]'); if (!b) return; blFilter = b.dataset.f; renderBacklog(); });
+$('#bl-filter').addEventListener('click', e => { const b = e.target.closest('[data-f]'); if (!b) return; blFilter = b.dataset.f; renderBacklog(); });
 renderBacklog();
 
 /* ---------- Acceptance criteria ---------- */
@@ -1440,29 +1444,22 @@ const AC = [
 ];
 let acSel = 0;
 function renderAC(){
-  const acTabs = $('#ac-tabs');
-  if (acTabs) acTabs.innerHTML = AC.map(([id, t], i) => `<button type="button" role="tab" id="ac-t${i}" aria-controls="ac-panel" aria-selected="${i === acSel}" tabindex="${i === acSel ? 0 : -1}" data-i="${i}"><b>${id}</b><span>${t}</span></button>`).join('');
-  const acPanel = $('#ac-panel');
-  if (acPanel) {
-    acPanel.setAttribute('aria-labelledby', 'ac-t' + acSel);
-    acPanel.innerHTML = AC[acSel][2].map(([n, g, w, t]) => `<article class="scn"><h3>${esc(n)}</h3><dl class="gwt"><dt>Given</dt><dd>${esc(g)}</dd><dt>When</dt><dd>${esc(w)}</dd><dt>Then</dt><dd>${esc(t)}</dd></dl></article>`).join('');
-  }
+  $('#ac-tabs').innerHTML = AC.map(([id, t], i) => `<button type="button" role="tab" id="ac-t${i}" aria-controls="ac-panel" aria-selected="${i === acSel}" tabindex="${i === acSel ? 0 : -1}" data-i="${i}"><b>${id}</b><span>${t}</span></button>`).join('');
+  $('#ac-panel').setAttribute('aria-labelledby', 'ac-t' + acSel);
+  $('#ac-panel').innerHTML = AC[acSel][2].map(([n, g, w, t]) => `<article class="scn"><h3>${esc(n)}</h3><dl class="gwt"><dt>Given</dt><dd>${esc(g)}</dd><dt>When</dt><dd>${esc(w)}</dd><dt>Then</dt><dd>${esc(t)}</dd></dl></article>`).join('');
 }
-const acTabsEl = $('#ac-tabs');
-if (acTabsEl) {
-  acTabsEl.addEventListener('click', e => { const b = e.target.closest('[data-i]'); if (!b) return; acSel = Number(b.dataset.i); renderAC(); const target = $('#ac-t' + acSel); if (target) target.focus(); });
-  acTabsEl.addEventListener('keydown', e => {
-    if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
-    acSel = (acSel + (e.key === 'ArrowRight' ? 1 : AC.length - 1)) % AC.length; renderAC(); const target = $('#ac-t' + acSel); if (target) target.focus();
-  });
-}
+$('#ac-tabs').addEventListener('click', e => { const b = e.target.closest('[data-i]'); if (!b) return; acSel = Number(b.dataset.i); renderAC(); $('#ac-t' + acSel).focus(); });
+$('#ac-tabs').addEventListener('keydown', e => {
+  if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+  acSel = (acSel + (e.key === 'ArrowRight' ? 1 : AC.length - 1)) % AC.length; renderAC(); $('#ac-t' + acSel).focus();
+});
 renderAC();
 
 /* ---------- Copy deterrent (form fields stay usable) ---------- */
 const NOTICE = 'Content © 2026 Kiki Novalia. Please ask before reusing this portfolio.';
 const editable = t => { const el = t && t.nodeType === 3 ? t.parentElement : t; return !!(el && el.closest && el.closest('input, textarea, select')); };
 const note = $('#copy-note'); let noteTimer;
-function showNote(){ if (!note) return; note.textContent = 'Copying is disabled · © Kiki Novalia'; note.hidden = false; clearTimeout(noteTimer); noteTimer = setTimeout(() => { note.hidden = true; }, 2200); }
+function showNote(){ note.textContent = 'Copying is disabled · © Kiki Novalia'; note.hidden = false; clearTimeout(noteTimer); noteTimer = setTimeout(() => { note.hidden = true; }, 2200); }
 ['copy', 'cut'].forEach(type => document.addEventListener(type, e => {
   if (editable(e.target)) return;
   e.preventDefault();
@@ -1479,4 +1476,5 @@ document.addEventListener('keydown', e => {
 })();
 </script>
 
-</body></html>
+</body>
+</html>
