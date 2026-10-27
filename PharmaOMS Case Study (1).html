@@ -1,0 +1,1462 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>PharmaOMS Case Study</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout concept: a batch record. The case study reads as a stack of record sheets on cool label stock;
+   the working prototype sits in the middle like the packing-station screen it imitates. */
+:root{
+  --paper:#EDF2F0; --sheet:#FFFFFF; --ink:#0F1C1E; --muted:#56696A; --rule:#D2DCD9; --wash:#F5F8F7;
+  --accent:#0B6B5F; --accent-ink:#FFFFFF; --accent-soft:#D8EEE8;
+  --signal:#D9512C; --signal-soft:#FCE6DE;
+  --ok:#1D7A48; --ok-soft:#DCF1E4; --warn:#93600A; --warn-soft:#FAEDD3; --bad:#B42318; --bad-soft:#FBE3DF;
+  --side:#0E2B28; --side-ink:#BFD6D1; --side-active:#1B4A44; --side-muted:#6F918B;
+  --label:#FFFFFF; --label-ink:#121212; --label-edge:#CBD2D0; --slot:#13211F;
+  --shadow:0 1px 0 rgba(15,28,30,.05),0 18px 40px -24px rgba(15,28,30,.45);
+  --f-display:"Archivo","Arial Narrow","Helvetica Neue",Arial,sans-serif;
+  --f-body:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0A1213; --sheet:#111C1E; --ink:#E3ECEA; --muted:#93A8A4; --rule:#24363A; --wash:#0E181A;
+    --accent:#55C4AF; --accent-ink:#04201B; --accent-soft:#12332E;
+    --signal:#FF7B52; --signal-soft:#3A1C12;
+    --ok:#5CCF8F; --ok-soft:#11301F; --warn:#EDB653; --warn-soft:#33270F; --bad:#FF8C7C; --bad-soft:#3A1614;
+    --side:#081917; --side-ink:#B6CEC9; --side-active:#16403A; --side-muted:#5E7F79;
+    --label:#F4F5F2; --label-ink:#121212; --label-edge:#3A4A4D; --slot:#03090A;
+    --shadow:0 1px 0 rgba(0,0,0,.3),0 18px 40px -24px rgba(0,0,0,.8);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0A1213; --sheet:#111C1E; --ink:#E3ECEA; --muted:#93A8A4; --rule:#24363A; --wash:#0E181A;
+  --accent:#55C4AF; --accent-ink:#04201B; --accent-soft:#12332E;
+  --signal:#FF7B52; --signal-soft:#3A1C12;
+  --ok:#5CCF8F; --ok-soft:#11301F; --warn:#EDB653; --warn-soft:#33270F; --bad:#FF8C7C; --bad-soft:#3A1614;
+  --side:#081917; --side-ink:#B6CEC9; --side-active:#16403A; --side-muted:#5E7F79;
+  --label:#F4F5F2; --label-ink:#121212; --label-edge:#3A4A4D; --slot:#03090A;
+  --shadow:0 1px 0 rgba(0,0,0,.3),0 18px 40px -24px rgba(0,0,0,.8);
+  color-scheme:dark;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:72px}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}*{animation:none!important;transition:none!important}}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.55;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+a{color:var(--accent)}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+.wrap{max-width:1180px;margin-inline:auto;padding-inline:24px}
+@media (max-width:560px){.wrap{padding-inline:16px}}
+.cap{font-family:var(--f-mono);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0;font-weight:500}
+.muted{color:var(--muted)}
+h1,h2,h3,h4{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.05}
+p{margin:0}
+
+/* ---------- Header ---------- */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:color-mix(in srgb,var(--paper) 90%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--rule)}
+.top .wrap{display:flex;align-items:center;gap:20px;min-height:56px}
+.wordmark{display:flex;align-items:center;gap:10px;font-family:var(--f-display);font-weight:800;font-stretch:85%;font-size:1.15rem;text-decoration:none;color:var(--ink);white-space:nowrap}
+.wordmark i{width:22px;height:22px;border-radius:6px;background:var(--accent);display:grid;place-items:center;color:var(--accent-ink);font-style:normal;font-size:.8rem;font-weight:800;font-family:var(--f-mono)}
+.toplinks{display:flex;gap:4px;overflow-x:auto;margin-left:auto;scrollbar-width:none;min-width:0}
+.toplinks::-webkit-scrollbar{display:none}
+.toplinks a{color:var(--muted);text-decoration:none;font-size:.9rem;padding:6px 10px;border-radius:999px;white-space:nowrap}
+.toplinks a:hover{color:var(--ink);background:var(--sheet)}
+
+/* ---------- Hero ---------- */
+.hero{padding-block:64px 56px}
+.hero .wrap{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,.9fr);gap:56px;align-items:center}
+.hero h1{font-size:clamp(2.6rem,6vw,4.9rem);font-weight:850;font-stretch:72%;letter-spacing:-.01em;line-height:.95;margin-top:14px}
+.hero h1 em{font-style:normal;color:var(--accent)}
+.lede{font-size:1.2rem;max-width:36ch;margin-top:22px;color:var(--ink)}
+.facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 28px;margin:32px 0 0;padding:20px 0 0;border-top:1px solid var(--rule);max-width:560px}
+.facts div{display:grid;gap:4px}
+.facts dd{margin:0;font-size:.98rem}
+.cta{display:inline-flex;align-items:center;gap:10px;margin-top:30px;background:var(--ink);color:var(--paper);text-decoration:none;font-weight:700;padding:12px 18px;border-radius:999px}
+.cta span{font-family:var(--f-mono);font-size:.8rem}
+.cta:hover{background:var(--accent);color:var(--accent-ink)}
+
+.printer{position:relative;max-width:400px;margin-inline:auto;width:100%}
+.slot{height:22px;border-radius:11px;background:var(--slot);border:1px solid var(--rule);position:relative;z-index:2;box-shadow:inset 0 -6px 0 rgba(255,255,255,.08)}
+.slot::after{content:"";position:absolute;left:18px;right:18px;bottom:7px;height:3px;border-radius:2px;background:rgba(255,255,255,.2)}
+.label{position:relative;z-index:1;margin:-10px 18px 0;background:var(--label);color:var(--label-ink);border:1px solid var(--label-edge);border-radius:0 0 10px 10px;padding:26px 22px 20px;box-shadow:var(--shadow);font-family:var(--f-mono);animation:feed 1.1s steps(11,end) .2s both}
+@keyframes feed{from{transform:translateY(-34px)}to{transform:none}}
+.label .lt{display:flex;justify-content:space-between;gap:12px;font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;border-bottom:2px solid var(--label-ink);padding-bottom:8px}
+.label .prod{font-family:var(--f-display);font-stretch:78%;font-weight:800;font-size:1.65rem;line-height:1;margin:14px 0 4px}
+.label .pack{font-size:.78rem}
+.label .codes{display:grid;grid-template-columns:96px minmax(0,1fr);gap:16px;align-items:center;margin-top:16px}
+.label .codes svg{width:96px;height:96px;display:block}
+.hri{display:grid;gap:3px;font-size:.78rem;line-height:1.35;min-width:0}
+.hri div{display:flex;gap:8px;white-space:nowrap}
+.hri b{font-weight:600;min-width:34px}
+.label .lb{display:flex;justify-content:space-between;gap:10px;margin-top:16px;padding-top:10px;border-top:1px dashed #9AA3A1;font-size:.7rem}
+.printer figcaption{font-size:.88rem;color:var(--muted);margin-top:16px;padding-inline:18px}
+
+/* ---------- Sections ---------- */
+.sec{padding-block:72px}
+.sec + .sec{border-top:1px solid var(--rule)}
+.sec-head{display:grid;gap:12px;max-width:760px;margin-bottom:36px}
+.sec-head h2{font-size:clamp(2rem,4vw,3rem);font-weight:800;font-stretch:78%;letter-spacing:-.005em}
+.sec-head p{font-size:1.08rem;color:var(--muted);max-width:62ch}
+.prose{max-width:64ch;display:grid;gap:14px}
+
+.problem{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:48px;align-items:start}
+.targets{display:grid;gap:12px}
+.target{display:grid;grid-template-columns:auto minmax(0,1fr);gap:16px;align-items:center;background:var(--sheet);border:1px solid var(--rule);border-radius:12px;padding:16px 18px}
+.target .num{font-family:var(--f-display);font-weight:850;font-stretch:72%;font-size:2.3rem;line-height:1;color:var(--accent);min-width:3.6ch;font-variant-numeric:tabular-nums}
+.target p{font-size:.98rem}
+.note{font-size:.88rem;color:var(--muted)}
+
+/* ---------- Prototype ---------- */
+.proto-grid{display:grid;gap:16px}
+.proto{container-type:inline-size;background:var(--sheet);border:1px solid var(--rule);border-radius:16px;overflow:hidden;box-shadow:var(--shadow);position:relative}
+.station{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--rule);background:var(--wash);font-size:.8rem;color:var(--muted)}
+.station .led{width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 3px var(--ok-soft)}
+.station .sp{flex:1}
+.station button{white-space:nowrap;background:none;border:1px solid var(--rule);border-radius:999px;padding:4px 12px;font-size:.8rem;color:var(--ink);cursor:pointer}
+.station button:hover{border-color:var(--ink)}
+.guide{background:var(--sheet);border:1px solid var(--rule);border-radius:16px;padding:20px 22px;display:grid;grid-template-columns:240px minmax(0,1fr);gap:12px 32px;align-items:start}
+.guide h3{font-size:1.5rem;font-weight:800;font-stretch:80%}
+.guide .prog{display:flex;align-items:center;gap:10px;margin:12px 0 16px}
+.guide .bar{flex:1}
+.guide ol{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:2px 14px;counter-reset:g}
+.guide li{display:grid;grid-template-columns:24px minmax(0,1fr);gap:10px;padding:8px 6px;border-radius:8px;counter-increment:g;font-size:.92rem;line-height:1.35}
+.guide li::before{content:counter(g);width:24px;height:24px;border-radius:50%;border:1.5px solid var(--rule);display:grid;place-items:center;font-family:var(--f-mono);font-size:.72rem;color:var(--muted)}
+.guide li.done::before{content:"✓";background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:700}
+.guide li.done span{color:var(--muted)}
+.guide li small{display:block;font-family:var(--f-mono);font-size:.7rem;color:var(--muted);margin-top:2px}
+.guide .accts{margin-top:4px;padding-top:12px;border-top:1px solid var(--rule);font-size:.84rem;display:grid;gap:6px}
+.guide .accts code{font-family:var(--f-mono);font-size:.8rem}
+
+/* prototype app */
+.app-root{font-size:14px;line-height:1.45}
+.app{display:grid;grid-template-columns:176px minmax(0,1fr);height:660px}
+.side{background:var(--side);color:var(--side-ink);display:flex;flex-direction:column;padding:16px 10px;gap:4px;min-width:0}
+.side .brand{display:flex;align-items:center;gap:8px;color:#fff;font-family:var(--f-display);font-weight:800;font-stretch:85%;font-size:1.05rem;padding:2px 8px 16px}
+.side .brand i{width:18px;height:18px;border-radius:5px;background:var(--accent)}
+.nav{display:grid;gap:2px}
+.nav button{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:none;border:0;color:inherit;padding:8px 10px;border-radius:8px;cursor:pointer;white-space:nowrap}
+.nav button:hover{background:rgba(255,255,255,.06)}
+.nav button.on{background:var(--side-active);color:#fff}
+.nav button[disabled]{color:var(--side-muted);cursor:default;background:none}
+.nav .tag{margin-left:auto;font-family:var(--f-mono);font-size:.66rem;border:1px solid var(--side-muted);border-radius:4px;padding:0 4px}
+.nav svg{width:16px;height:16px;flex:none}
+.me{margin-top:auto;display:grid;grid-template-columns:32px minmax(0,1fr);gap:8px;align-items:center;padding:12px 8px 0;border-top:1px solid rgba(255,255,255,.08)}
+.me .av{width:32px;height:32px;border-radius:50%;background:var(--side-active);display:grid;place-items:center;color:#fff;font-weight:700;font-size:.8rem}
+.me b{display:block;color:#fff;font-size:.86rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.me span{font-size:.76rem}
+.me .out{grid-column:1/-1;background:none;border:1px solid rgba(255,255,255,.14);color:var(--side-ink);border-radius:7px;padding:5px;cursor:pointer;font-size:.8rem;margin-top:6px}
+.me .out:hover{border-color:var(--side-ink)}
+.pane{min-width:0;overflow:auto;background:var(--wash)}
+.pane-body{padding:18px 20px 24px;display:grid;gap:14px}
+
+.head{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.head h3{font-size:1.55rem;font-weight:800;font-stretch:85%;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.head .sp{flex:1}
+.back{background:none;border:0;padding:0;color:var(--muted);cursor:pointer;font-size:.82rem;margin-bottom:4px}
+.back:hover{color:var(--ink)}
+.meta{display:flex;gap:24px;flex-wrap:wrap}
+.meta div{display:grid;gap:2px}
+.meta b{font-size:.92rem}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--rule);background:var(--sheet);border-radius:8px;padding:7px 12px;font-weight:700;font-size:.86rem;cursor:pointer;white-space:nowrap;color:var(--ink)}
+.btn:hover{border-color:var(--ink)}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.pri:hover{filter:brightness(1.08)}
+.btn.sm{padding:4px 10px;font-size:.8rem}
+.btn.block{width:100%;padding:10px}
+.btn[disabled]{opacity:.45;cursor:not-allowed;filter:none}
+.link{background:none;border:0;padding:0;color:var(--accent);font-weight:700;cursor:pointer;font-size:.84rem}
+
+.card{background:var(--sheet);border:1px solid var(--rule);border-radius:12px;min-width:0}
+.card-h{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--rule);flex-wrap:wrap}
+.card-h h4{font-size:1.02rem;font-weight:750;font-stretch:90%}
+.card-h .sp{flex:1}
+.pad{padding:14px}
+.inp{width:100%;border:1px solid var(--rule);background:var(--sheet);border-radius:8px;padding:8px 10px;color:var(--ink)}
+.inp:focus{outline:2px solid var(--accent);outline-offset:0;border-color:var(--accent)}
+.search{max-width:240px}
+
+.tscroll{overflow-x:auto}
+.tbl{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.tbl th{text-align:left;font-family:var(--f-mono);font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:500;padding:9px 12px;border-bottom:1px solid var(--rule);white-space:nowrap;background:var(--wash)}
+.tbl td{padding:9px 12px;border-bottom:1px solid var(--rule);white-space:nowrap;vertical-align:middle}
+.tbl tr:last-child td{border-bottom:0}
+.tbl tbody tr.click{cursor:pointer}
+.tbl tbody tr.click:hover td{background:var(--wash)}
+.mono{font-family:var(--f-mono);font-size:.8rem}
+.sub{display:block;color:var(--muted);font-size:.76rem}
+.app-root .show-n{display:none}
+
+.pill{display:inline-block;padding:2px 9px;border-radius:999px;font-size:.74rem;font-weight:700;white-space:nowrap;font-family:var(--f-body)}
+.st-new{background:var(--wash);color:var(--ink);box-shadow:inset 0 0 0 1px var(--rule)}
+.st-prog{background:var(--warn-soft);color:var(--warn)}
+.st-lab{background:var(--accent-soft);color:var(--accent)}
+.st-rel{background:var(--ok-soft);color:var(--ok)}
+.st-bad{background:var(--bad-soft);color:var(--bad)}
+.bar{height:6px;border-radius:3px;background:var(--rule);overflow:hidden;min-width:60px}
+.bar i{display:block;height:100%;background:var(--accent);border-radius:3px;transition:width .3s}
+.barcell{display:flex;align-items:center;gap:8px}
+.barcell .bar{width:90px}
+
+.tabs{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.tab{border:1px solid var(--rule);background:var(--sheet);border-radius:999px;padding:5px 12px;font-size:.82rem;cursor:pointer;color:var(--ink)}
+.tab.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.tab .n{font-family:var(--f-mono);font-size:.72rem;opacity:.7;margin-left:4px}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.toolbar .sp{flex:1}
+
+.split{display:grid;grid-template-columns:minmax(0,1fr) 264px;gap:14px;align-items:start}
+.addrow{display:flex;align-items:center;gap:6px}
+.step{display:inline-flex;align-items:center;border:1px solid var(--rule);border-radius:7px;overflow:hidden;background:var(--sheet)}
+.step button{border:0;background:none;width:26px;height:26px;cursor:pointer;color:var(--muted);font-size:1rem;line-height:1}
+.step button:hover{background:var(--wash);color:var(--ink)}
+.step span{min-width:26px;text-align:center;font-weight:700;font-variant-numeric:tabular-nums;border-inline:1px solid var(--rule);line-height:26px}
+.cart-line{padding:12px 14px;border-bottom:1px solid var(--rule);display:grid;gap:6px}
+.cart-line .r{display:flex;align-items:center;gap:8px}
+.cart-line .r .sp{flex:1}
+.x{border:0;background:none;color:var(--muted);cursor:pointer;font-size:1rem;padding:2px 4px;border-radius:4px}
+.x:hover{color:var(--bad);background:var(--bad-soft)}
+.cart-foot{padding:14px;display:grid;gap:10px}
+.empty{padding:24px 16px;text-align:center;color:var(--muted);font-size:.88rem}
+
+.alert{border-radius:9px;padding:10px 12px;font-size:.86rem;line-height:1.45}
+.alert.bad{background:var(--bad-soft);color:var(--bad)}
+.alert.ok{background:var(--ok-soft);color:var(--ok)}
+.alert.info{background:var(--accent-soft);color:var(--accent)}
+.alert.warn{background:var(--warn-soft);color:var(--warn)}
+.alert b{display:block;font-size:.95rem}
+
+.station-grid{display:grid;grid-template-columns:minmax(0,1fr) 250px;gap:14px;align-items:start}
+.col{display:grid;gap:14px;min-width:0}
+.scanbox{padding:14px;display:grid;gap:10px;border:2px solid var(--accent);border-radius:12px;background:var(--sheet)}
+.scanrow{display:flex;gap:8px}
+.scanrow .inp{font-family:var(--f-mono);font-size:.84rem}
+.bench{display:grid;gap:8px;padding-top:4px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--rule);background:var(--wash);border-radius:8px;padding:6px 9px;font-size:.78rem;cursor:pointer;text-align:left;line-height:1.25;color:var(--ink)}
+.chip:hover{border-color:var(--accent)}
+.chip small{display:block;font-family:var(--f-mono);font-size:.68rem;color:var(--muted)}
+.chip.bad{border-style:dashed}
+.chip.bad small{color:var(--bad)}
+.log{display:grid}
+.log div{display:grid;grid-template-columns:auto 8px minmax(0,1fr);gap:10px;align-items:center;padding:8px 14px;border-bottom:1px solid var(--rule);font-size:.82rem}
+.log div:last-child{border-bottom:0}
+.log .dot{width:8px;height:8px;border-radius:50%}
+.log .t{font-family:var(--f-mono);font-size:.74rem;color:var(--muted)}
+.log .m{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+.big{font-family:var(--f-display);font-weight:850;font-stretch:72%;font-size:2.2rem;line-height:1;font-variant-numeric:tabular-nums}
+.minilabel{background:var(--label);color:var(--label-ink);border:1px solid var(--label-edge);border-radius:8px;padding:12px;font-family:var(--f-mono);display:grid;gap:8px}
+.minilabel .p{font-family:var(--f-display);font-weight:800;font-stretch:80%;font-size:1.05rem;line-height:1.05}
+.minilabel .c{display:grid;grid-template-columns:64px minmax(0,1fr);gap:10px;align-items:center}
+.minilabel svg{width:64px;height:64px;display:block}
+.minilabel .hri{font-size:.66rem;gap:1px}
+.minilabel .hri b{min-width:26px}
+.printing{animation:feed2 .7s steps(7,end)}
+@keyframes feed2{from{transform:translateY(-16px);clip-path:inset(0 0 60% 0)}to{transform:none;clip-path:inset(0)}}
+.radios{display:grid;gap:4px}
+.radios label{display:flex;gap:8px;align-items:center;font-size:.86rem;cursor:pointer}
+.reg{max-height:240px;overflow:auto}
+
+.panel{background:var(--sheet);border:1px solid var(--accent);border-radius:12px;padding:14px;display:grid;gap:12px}
+.panel h4{font-size:1.05rem;font-weight:750;font-stretch:90%}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+.fld{display:grid;gap:4px}
+.fld label{font-size:.78rem;font-weight:700}
+.row-end{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+.file{display:flex;align-items:center;gap:10px;font-family:var(--f-mono);font-size:.8rem;border:1px dashed var(--rule);border-radius:8px;padding:10px 12px;background:var(--wash)}
+
+.matrix td,.matrix th{text-align:center}
+.matrix td:first-child,.matrix th:first-child{text-align:left}
+.matrix input{width:16px;height:16px;accent-color:var(--accent);cursor:pointer}
+.matrix input:disabled{cursor:not-allowed}
+.sel{border:1px solid var(--rule);border-radius:7px;padding:4px 6px;background:var(--sheet)}
+.users-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:start}
+
+.login{min-height:660px;display:grid;place-items:center;padding:24px;background:var(--wash);gap:18px;align-content:center}
+.login-card{width:min(360px,100%);background:var(--sheet);border:1px solid var(--rule);border-radius:14px;padding:26px;display:grid;gap:10px}
+.login-card h3{font-size:1.6rem;font-weight:800;font-stretch:85%}
+.login-card label{font-weight:700;font-size:.82rem;margin-top:4px}
+.accts{width:min(360px,100%);display:grid;gap:8px}
+.acct-list{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.acct{border:1px solid var(--rule);background:var(--sheet);border-radius:9px;padding:8px 10px;text-align:left;cursor:pointer;display:grid;gap:1px;color:var(--ink)}
+.acct:hover{border-color:var(--accent)}
+.acct b{font-size:.84rem}
+.acct span{font-size:.74rem;color:var(--muted);font-family:var(--f-mono)}
+.toast{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:9px 16px;border-radius:999px;font-size:.86rem;font-weight:700;box-shadow:var(--shadow);z-index:5;max-width:calc(100% - 32px);text-align:center}
+
+@container (max-width:860px){
+  .split,.station-grid,.users-grid{grid-template-columns:minmax(0,1fr)}
+}
+@container (max-width:640px){
+  .app-root .hide-n{display:none}
+  .app-root .show-n{display:block}
+  .app{grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);height:auto;min-height:620px}
+  .side{flex-direction:row;align-items:center;padding:8px 10px;gap:6px;overflow-x:auto}
+  .side .brand{padding:0 6px 0 2px}
+  .nav{display:flex;gap:2px}
+  .nav button{padding:6px 9px}
+  .nav .tag{display:none}
+  .me{margin:0 0 0 auto;border:0;padding:0;display:flex;align-items:center;gap:8px}
+  .me div:not(.av){display:none}
+  .me .out{margin:0;grid-column:auto;white-space:nowrap}
+  .pane{overflow:visible}
+  .pane-body{padding:14px}
+  .login{min-height:600px}
+  .acct-list{grid-template-columns:1fr}
+}
+
+/* ---------- Flow & roles ---------- */
+.roles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.role{background:var(--sheet);border:1px solid var(--rule);border-radius:12px;padding:16px;display:grid;gap:6px;align-content:start}
+.role h3{font-size:1.25rem;font-weight:800;font-stretch:82%}
+.role p{font-size:.92rem}
+.flow{list-style:none;margin:28px 0 0;padding:0;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:0;counter-reset:f;border:1px solid var(--rule);border-radius:12px;background:var(--sheet);overflow:hidden}
+.flow li{counter-increment:f;padding:16px;display:grid;gap:8px;align-content:start;border-right:1px solid var(--rule);font-size:.92rem;line-height:1.4}
+.flow li:last-child{border-right:0}
+.flow li::before{content:counter(f,decimal-leading-zero);font-family:var(--f-mono);font-size:.74rem;color:var(--muted)}
+.flow .who{font-family:var(--f-mono);font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);font-weight:600}
+
+/* ---------- Decisions ---------- */
+.decisions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.decision{background:var(--sheet);border:1px solid var(--rule);border-radius:12px;padding:20px;display:grid;gap:10px;align-content:start}
+.decision h3{font-size:1.35rem;font-weight:800;font-stretch:80%}
+.decision dl{margin:0;display:grid;gap:8px}
+.decision dt{font-family:var(--f-mono);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.decision dd{margin:0;font-size:.95rem}
+
+/* ---------- Roadmap ---------- */
+.ruler{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:3px;margin-bottom:10px;padding-right:10px;min-width:520px}
+.ruler .ph{font-family:var(--f-mono);font-size:.72rem;color:var(--muted);padding:0 2px 6px;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ruler .ph.mvp{color:var(--accent);font-weight:600}
+.ruler .sprint{height:30px;border-radius:5px;background:var(--rule);display:grid;place-items:center;font-family:var(--f-mono);font-size:.72rem;color:var(--ink);position:relative}
+.ruler .sprint.mvp{background:var(--accent);color:var(--accent-ink)}
+.ruler .sprint.r2{background:color-mix(in srgb,var(--accent) 35%,var(--rule))}
+.ruler .sprint.r3{background:color-mix(in srgb,var(--accent) 18%,var(--rule))}
+.ruler .sprint.end::after{content:"";position:absolute;right:-8px;top:50%;width:11px;height:11px;background:var(--signal);transform:translateY(-50%) rotate(45deg);border:2px solid var(--paper);z-index:1}
+.ruler .wk{font-family:var(--f-mono);font-size:.66rem;color:var(--muted);text-align:right;padding-top:4px}
+.phases{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:22px}
+.phase{background:var(--sheet);border:1px solid var(--rule);border-radius:12px;padding:18px;display:grid;gap:10px;align-content:start}
+.phase.mvp{border:2px solid var(--accent);background:color-mix(in srgb,var(--accent-soft) 45%,var(--sheet))}
+.phase h3{font-size:1.4rem;font-weight:800;font-stretch:80%}
+.phase .goal{font-weight:700}
+.phase ul{margin:0;padding-left:18px;font-size:.92rem;display:grid;gap:3px}
+.gate{display:grid;grid-template-columns:12px minmax(0,1fr);gap:10px;align-items:start;margin-top:4px;padding-top:12px;border-top:1px solid var(--rule);font-size:.86rem}
+.gate::before{content:"";width:10px;height:10px;background:var(--signal);transform:rotate(45deg);margin-top:5px}
+.gate b{display:block}
+.scrum{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:28px}
+.scrum div{border-top:2px solid var(--ink);padding-top:12px;display:grid;gap:6px;font-size:.94rem}
+.scrum h3{font-size:1.1rem;font-weight:800;font-stretch:85%}
+.sheet{background:var(--sheet);border:1px solid var(--rule);border-radius:12px;overflow:hidden;margin-top:28px}
+.sheet .tbl td{white-space:normal;min-width:90px;font-size:.92rem}
+.sheet .tbl td:first-child,.sheet .tbl td:nth-child(2){white-space:nowrap;min-width:0}
+
+/* ---------- Backlog ---------- */
+.backlog-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.backlog-bar .sp{flex:1}
+.stories{display:grid;background:var(--sheet);border:1px solid var(--rule);border-radius:12px;overflow:hidden}
+.story{display:grid;grid-template-columns:96px minmax(0,1fr) auto;gap:18px;align-items:center;padding:14px 18px;border-bottom:1px solid var(--rule)}
+.story:last-child{border-bottom:0}
+.story .id{font-family:var(--f-mono);font-size:.82rem;font-weight:600;display:grid;gap:2px}
+.story .id span{font-weight:400;color:var(--muted);font-size:.72rem}
+.story p{font-size:.98rem;max-width:72ch}
+.story .tags{display:flex;gap:6px;align-items:center;justify-content:flex-end;flex-wrap:wrap}
+.tagb{font-family:var(--f-mono);font-size:.72rem;padding:2px 7px;border-radius:5px;border:1px solid var(--rule);white-space:nowrap}
+.pr-must{background:var(--accent-soft);color:var(--accent);border-color:transparent}
+.pr-should{background:var(--warn-soft);color:var(--warn);border-color:transparent}
+.pr-could{color:var(--muted)}
+
+/* ---------- Acceptance criteria ---------- */
+.ac-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.ac-tabs button{border:1px solid var(--rule);background:var(--sheet);border-radius:10px;padding:8px 14px;cursor:pointer;text-align:left;display:grid;color:var(--ink)}
+.ac-tabs button b{font-family:var(--f-mono);font-size:.78rem}
+.ac-tabs button span{font-size:.86rem;color:var(--muted)}
+.ac-tabs button[aria-selected="true"]{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.ac-tabs button[aria-selected="true"] span{color:var(--paper);opacity:.75}
+.scenarios{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.scn{background:var(--sheet);border:1px solid var(--rule);border-radius:12px;padding:18px;display:grid;gap:10px;align-content:start}
+.scn h3{font-size:1.15rem;font-weight:800;font-stretch:85%}
+.gwt{display:grid;grid-template-columns:56px minmax(0,1fr);gap:6px 12px;margin:0;font-size:.94rem}
+.gwt dt{font-family:var(--f-mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);padding-top:3px;font-weight:600}
+.gwt dd{margin:0}
+
+/* ---------- DoD ---------- */
+.dod{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:16px}
+.dod section{background:var(--sheet);border:1px solid var(--rule);border-radius:12px;padding:20px}
+.dod h3{font-size:1.3rem;font-weight:800;font-stretch:82%;margin-bottom:12px}
+.dod ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.dod li{display:grid;grid-template-columns:18px minmax(0,1fr);gap:10px;font-size:.95rem}
+.dod li::before{content:"";width:14px;height:14px;border:1.5px solid var(--ink);border-radius:3px;margin-top:4px}
+
+/* ---------- Authorship: watermark + copy deterrent ---------- */
+body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+input,textarea,select{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default}
+.copy-note{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:50;background:var(--ink);color:var(--paper);padding:10px 18px;border-radius:999px;font-size:.88rem;font-weight:700;box-shadow:var(--shadow);max-width:calc(100% - 32px);text-align:center}
+.print-note{display:none}
+@media print{
+  body>*:not(.print-note){display:none!important}
+  .print-note{display:block!important;font:16px/1.5 Arial,sans-serif;color:#000;padding:40px}
+}
+.author{color:var(--accent)}
+
+footer{padding-block:40px 56px;border-top:1px solid var(--rule);color:var(--muted);font-size:.9rem}
+footer .wrap{display:flex;gap:16px;flex-wrap:wrap;justify-content:space-between}
+
+@media (max-width:980px){
+  .hero .wrap{grid-template-columns:minmax(0,1fr);gap:40px}
+  .proto-grid{grid-template-columns:minmax(0,1fr)}
+  .guide{grid-template-columns:minmax(0,1fr)}
+  .guide ol{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .roles{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .flow{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .flow li:nth-child(3){border-right:0}
+  .flow li:nth-child(-n+3){border-bottom:1px solid var(--rule)}
+  .phases{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:720px){
+  .problem,.decisions,.scenarios,.dod{grid-template-columns:minmax(0,1fr)}
+  .story{grid-template-columns:minmax(0,1fr);gap:8px}
+  .story .id{display:flex;gap:8px;align-items:baseline}
+  .story .tags{justify-content:flex-start}
+  .sec{padding-block:52px}
+  .hero{padding-block:40px}
+}
+@media (max-width:560px){
+  .roles,.phases{grid-template-columns:minmax(0,1fr)}
+  .flow{grid-template-columns:minmax(0,1fr)}
+  .flow li{border-right:0;border-bottom:1px solid var(--rule)}
+  .flow li:last-child{border-bottom:0}
+  .facts{grid-template-columns:minmax(0,1fr)}
+  .guide ol{grid-template-columns:minmax(0,1fr)}
+  .hide-s{display:none}
+  .ruler .ph{font-size:.6rem;letter-spacing:0}
+  .ruler .sprint{font-size:.62rem}
+}
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <a class="wordmark" href="#top"><i>Rx</i>PharmaOMS</a>
+    <nav class="toplinks" aria-label="Sections">
+      <a href="#problem">Problem</a>
+      <a href="#prototype">Prototype</a>
+      <a href="#users">Users</a>
+      <a href="#decisions">Decisions</a>
+      <a href="#roadmap">Roadmap</a>
+      <a href="#backlog">Backlog</a>
+      <a href="#criteria">Criteria</a>
+      <a href="#done">Done</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero">
+    <div class="wrap">
+      <div>
+        <p class="cap">Case study by <span class="author">Kiki Novalia</span> · Healthcare</p>
+        <h1>Serializing medicine <em>after</em> it's already packed</h1>
+        <p class="lede">A web order management system that lets pharmacy staff give every packaged item a unique serial number, check it with a scan, and print a compliant label.</p>
+        <dl class="facts">
+          <div><dt class="cap">Role</dt><dd>Product Owner / Business Analyst</dd></div>
+          <div><dt class="cap">Plan</dt><dd>Sprint 0 + 9 two-week sprints, 20 weeks</dd></div>
+          <div><dt class="cap">Deliverables</dt><dd>Roadmap, prototype, user stories, acceptance criteria, Definition of Done</dd></div>
+          <div><dt class="cap">MVP</dt><dd>Live in a pilot warehouse at week 10</dd></div>
+        </dl>
+        <a class="cta" href="#prototype">Try the prototype <span>↓</span></a>
+      </div>
+      <figure class="printer" style="margin:0">
+        <div class="slot" aria-hidden="true"></div>
+        <div class="label" role="img" aria-label="Example unit label for Montelukast 10 mg with a DataMatrix code, GTIN, serial number, batch and expiry">
+          <div class="lt"><span>Unit label</span><span>Rx only</span></div>
+          <div class="prod">Montelukast 10 mg</div>
+          <div class="pack">28 film-coated tablets</div>
+          <div class="codes">
+            <svg id="hero-dm" viewBox="0 0 18 18" shape-rendering="crispEdges" aria-hidden="true"></svg>
+            <div class="hri">
+              <div><b>GTIN</b><span>(01) 08991234500048</span></div>
+              <div><b>SN</b><span>(21) 7KQ2M9XA4PLD</span></div>
+              <div><b>LOT</b><span>(10) B24-0855</span></div>
+              <div><b>EXP</b><span>(17) 280131</span></div>
+            </div>
+          </div>
+          <div class="lb"><span>Order SFG00001</span><span>Hospital ABC</span></div>
+        </div>
+        <figcaption>Every unit leaves with a label like this. The numbers in brackets are GS1 application identifiers for product, serial, batch and expiry. The code pattern is illustrative.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="sec" id="problem">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="cap">The problem</p>
+        <h2>New rules require a serial number on every personalized medicine</h2>
+      </div>
+      <div class="problem">
+        <div class="prose">
+          <p>Serial numbers are usually applied on the packaging line. Stock that was packed before the rule changed has no serial, so it cannot ship compliantly.</p>
+          <p>The company needs a way to serialize orders that are already packed: generate a serial per item, confirm each physical item with a scan, and print a label for it. Access must be controlled, because staff with different jobs need different rights.</p>
+          <p>The brief included a prototype of the order screen: a product list with GTIN, batch and expiry on the left and a cart on the right. The prototype below keeps that layout.</p>
+        </div>
+        <div class="targets">
+          <p class="cap">Proposed success targets</p>
+          <div class="target"><span class="num">0</span><p>duplicate or unlabeled items in a released order</p></div>
+          <div class="target"><span class="num">≤10s</span><p>from scanning an item to its label printing</p></div>
+          <div class="target"><span class="num">&lt;2%</span><p>of labels reprinted</p></div>
+          <p class="note">Targets are validated with the QA pharmacist and warehouse lead in Sprint 0.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="prototype">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="cap">Prototype · Release 1 scope</p>
+        <h2>Try the packing-station flow</h2>
+        <p>A working prototype of the MVP. Sign in with a demo account, build a cart, generate serials, scan items and print labels. It runs entirely in your browser; Reset demo puts everything back.</p>
+      </div>
+      <div class="proto-grid">
+        <aside class="guide" aria-label="Suggested path through the prototype">
+          <div>
+            <h3>Try this path</h3>
+            <div class="prog"><span class="cap" id="g-count">0 of 9 done</span><div class="bar"><i id="g-bar" style="width:0%"></i></div></div>
+            <div class="accts">
+              <p class="cap">Demo accounts · password <code>demo1234</code></p>
+              <div><code>rina.s</code> Operator · <code>dewi.a</code> Supervisor</div>
+              <div><code>andi.p</code> Admin · <code>maya.l</code> Auditor</div>
+            </div>
+          </div>
+          <ol id="g-list"></ol>
+        </aside>
+        <div class="proto" id="proto">
+          <div class="station"><span class="led" aria-hidden="true"></span><span>Packing station 2<span class="hide-s"> · Printer ZD-02 ready</span></span><span class="sp"></span><button type="button" id="reset">Reset demo</button></div>
+          <div class="app-root" id="app"></div>
+          <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="users">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="cap">Users and flow</p>
+        <h2>Four roles, one hand-off from warehouse to pharmacist</h2>
+        <p>Each role sees only the menus and actions it is allowed to use. The Admin can change that matrix without a code release.</p>
+      </div>
+      <div class="roles">
+        <div class="role"><p class="cap">IT / system owner</p><h3>Admin</h3><p>Manages users, roles and settings. Can view orders and the audit log.</p></div>
+        <div class="role"><p class="cap">Pharmacist / QA lead</p><h3>Supervisor</h3><p>Creates and imports orders, reviews labeled orders and releases them for shipping.</p></div>
+        <div class="role"><p class="cap">Warehouse packer</p><h3>Operator</h3><p>Builds the cart, generates serials, scans each item and applies its label.</p></div>
+        <div class="role"><p class="cap">Internal or external QA</p><h3>Auditor</h3><p>Read-only access to orders, serial numbers and the audit log.</p></div>
+      </div>
+      <ol class="flow">
+        <li><span class="who">Supervisor</span>Creates or imports an order with destination and delivery date.</li>
+        <li><span class="who">Operator</span>Adds products to the cart by GTIN, batch and quantity.</li>
+        <li><span class="who">System</span>On Confirm, reserves one unique serial number per unit.</li>
+        <li><span class="who">Operator</span>Scans each packed item. GTIN, batch and expiry are checked.</li>
+        <li><span class="who">System</span>Binds the next serial to the item and prints its label.</li>
+        <li><span class="who">Supervisor</span>Reviews the fully labeled order and releases it.</li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="sec" id="decisions">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="cap">Key product decisions</p>
+        <h2>Four calls that shaped the MVP</h2>
+      </div>
+      <div class="decisions">
+        <article class="decision">
+          <h3>ERP integration waits for Release 2</h3>
+          <dl><dt>Why</dt><dd>Pilot volume is small. Manual entry and CSV import get the MVP live about two weeks sooner and avoid depending on the ERP team.</dd>
+          <dt>Trade-off</dt><dd>Some double entry during the pilot.</dd></dl>
+        </article>
+        <article class="decision">
+          <h3>Scan first, then print</h3>
+          <dl><dt>Why</dt><dd>A label prints only after the physical item passes validation, so a serial cannot land on the wrong product or an expiring pack.</dd>
+          <dt>Trade-off</dt><dd>One scan per item instead of printing a whole batch of labels up front.</dd></dl>
+        </article>
+        <article class="decision">
+          <h3>A reprint keeps the same serial</h3>
+          <dl><dt>Why</dt><dd>One serial belongs to one physical item for life. Every reprint needs a reason and is logged.</dd>
+          <dt>Trade-off</dt><dd>After two reprints the operator needs a supervisor; approval arrives in Release 2.</dd></dl>
+        </article>
+        <article class="decision">
+          <h3>Random 12-character serials</h3>
+          <dl><dt>Why</dt><dd>Sequential serials are easy to guess and forge. New serials are checked against every serial ever issued, including voided ones.</dd>
+          <dt>Trade-off</dt><dd>Serials carry no meaning on their own; lookups go through the system.</dd></dl>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="roadmap">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="cap">Product roadmap</p>
+        <h2>MVP in a pilot warehouse at week 10, full scope by week 20</h2>
+        <p>Delivery runs in two-week Scrum sprints with one goal per sprint. Each release ends at a gate; the next one starts when the gate's criteria are accepted in the sprint review.</p>
+      </div>
+      <div class="tscroll">
+        <div class="ruler" role="img" aria-label="Twenty-week timeline: Sprint 0, Release 1 in sprints 1 to 4, Release 2 in sprints 5 to 7, Release 3 in sprints 8 and 9">
+          <div class="ph" style="grid-column:1">Disc.</div>
+          <div class="ph mvp" style="grid-column:2 / 6">Release 1 · MVP</div>
+          <div class="ph" style="grid-column:6 / 9">Release 2</div>
+          <div class="ph" style="grid-column:9 / 11">Release 3</div>
+          <div class="sprint end">S0</div>
+          <div class="sprint mvp">S1</div><div class="sprint mvp">S2</div><div class="sprint mvp">S3</div><div class="sprint mvp end">S4</div>
+          <div class="sprint r2">S5</div><div class="sprint r2">S6</div><div class="sprint r2 end">S7</div>
+          <div class="sprint r3">S8</div><div class="sprint r3 end">S9</div>
+          <div class="wk">wk 2</div><div class="wk">4</div><div class="wk">6</div><div class="wk">8</div><div class="wk">10</div><div class="wk">12</div><div class="wk">14</div><div class="wk">16</div><div class="wk">18</div><div class="wk">20</div>
+        </div>
+      </div>
+      <div class="phases">
+        <article class="phase">
+          <p class="cap">Sprint 0 · weeks 1–2</p>
+          <h3>Discovery and setup</h3>
+          <ul><li>Stakeholder workshops</li><li>Regulatory rules and GS1 format</li><li>Scanner and printer test</li><li>Architecture and CI/CD</li><li>Backlog, DoR and DoD agreed</li></ul>
+          <div class="gate"><span><b>Backlog ready</b>Sprint 1 stories meet DoR; hardware tested</span></div>
+        </article>
+        <article class="phase mvp">
+          <p class="cap">Release 1 · sprints 1–4 · weeks 3–10</p>
+          <h3>First compliant order</h3>
+          <ul><li>Sign-in and role-based access</li><li>Orders and serialization cart</li><li>Serial number generation</li><li>Scan validation</li><li>Label printing and reprint</li><li>Audit trail</li></ul>
+          <div class="gate"><span><b>Pilot go-live</b>UAT signed off by the QA pharmacist</span></div>
+        </article>
+        <article class="phase">
+          <p class="cap">Release 2 · sprints 5–7 · weeks 11–16</p>
+          <h3>Control and integrate</h3>
+          <ul><li>ERP order integration</li><li>Serial format settings</li><li>Void and reprint approval</li><li>Dashboard and CSV export</li></ul>
+          <div class="gate"><span><b>Full rollout</b>ERP orders flowing to every station</span></div>
+        </article>
+        <article class="phase">
+          <p class="cap">Release 3 · sprints 8–9 · weeks 17–20</p>
+          <h3>Report and scale</h3>
+          <ul><li>Regulator reporting</li><li>Label template editor</li><li>Carton aggregation</li></ul>
+          <div class="gate"><span><b>Compliance ready</b>Regulator export accepted</span></div>
+        </article>
+      </div>
+      <div class="scrum">
+        <div><h3>Backlog priority</h3><p>Compliance-critical stories first (MoSCoW), then efficiency. Re-ranked after every review.</p></div>
+        <div><h3>Ceremonies</h3><p>Sprint planning, 15-minute daily scrum, mid-sprint refinement, review and retrospective.</p></div>
+        <div><h3>Real-world reviews</h3><p>Every sprint review is demoed on a packing station with a real scanner and printer.</p></div>
+        <div><h3>Capacity</h3><p>About 15 story points per sprint, recalibrated after Sprint 2 from actual velocity.</p></div>
+      </div>
+      <div class="sheet tscroll">
+        <table class="tbl">
+          <thead><tr><th>Sprint</th><th>Weeks</th><th>Sprint goal</th><th>Stories</th></tr></thead>
+          <tbody>
+            <tr><td>0</td><td>1–2</td><td>Requirements, hardware and architecture validated; backlog ready</td><td class="mono">Discovery</td></tr>
+            <tr><td>1</td><td>3–4</td><td>Staff sign in and see only what their role allows; actions are logged</td><td class="mono">US-01 02 03 14</td></tr>
+            <tr><td>2</td><td>5–6</td><td>Supervisors load orders; operators build a serialization cart</td><td class="mono">US-04 05 06</td></tr>
+            <tr><td>3</td><td>7–8</td><td>Confirming a cart generates unique serials; item scans are validated</td><td class="mono">US-07 09</td></tr>
+            <tr><td>4</td><td>9–10</td><td>Labels print and reprint; orders can be released; pilot UAT</td><td class="mono">US-10 11 13</td></tr>
+            <tr><td>5</td><td>11–12</td><td>Orders arrive from the ERP; serial format is configurable</td><td class="mono">US-17 08</td></tr>
+            <tr><td>6</td><td>13–14</td><td>Voids and reprints need supervisor approval; data export</td><td class="mono">US-12 15</td></tr>
+            <tr><td>7</td><td>15–16</td><td>Supervisors monitor throughput; rollout to all stations</td><td class="mono">US-16</td></tr>
+            <tr><td>8</td><td>17–18</td><td>Serialization data reaches the regulator; label templates are editable</td><td class="mono">US-18 19</td></tr>
+            <tr><td>9</td><td>19–20</td><td>Cartons carry their items' serials; release hardening</td><td class="mono">US-20</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="backlog">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="cap">Product backlog</p>
+        <h2>20 user stories; the 12 Must-haves are the MVP</h2>
+        <p>Stories follow INVEST and are sized in Fibonacci points. A story enters a sprint when it has clear acceptance criteria, a linked wireframe and no open dependency.</p>
+      </div>
+      <div class="backlog-bar">
+        <div class="tabs" role="group" aria-label="Filter by release" id="bl-filter"></div>
+        <span class="sp"></span>
+        <span class="cap" id="bl-sum"></span>
+      </div>
+      <div class="stories" id="bl-list"></div>
+    </div>
+  </section>
+
+  <section class="sec" id="criteria">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="cap">Acceptance criteria</p>
+        <h2>Given, when, then: each scenario becomes a test case</h2>
+        <p>Four Must-have stories shown. Most scenarios can be played in the prototype above.</p>
+      </div>
+      <div class="ac-tabs" role="tablist" aria-label="User story" id="ac-tabs"></div>
+      <div class="scenarios" role="tabpanel" id="ac-panel"></div>
+    </div>
+  </section>
+
+  <section class="sec" id="done">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="cap">Definition of Done</p>
+        <h2>Done means tested on real hardware and traceable</h2>
+        <p>A story is Done only when every item below is true. A release adds the checks that compliance sign-off needs.</p>
+      </div>
+      <div class="dod">
+        <section>
+          <h3>Every story</h3>
+          <ul>
+            <li>Code peer-reviewed (at least 1 approval) and merged to main</li>
+            <li>Unit tests written, at least 80% coverage on new code, CI green</li>
+            <li>All acceptance criteria pass, verified by QA on staging</li>
+            <li>Role permissions enforced on every new screen and API, with a negative test</li>
+            <li>Regulated actions (generate, print, reprint, void, release) write an audit entry</li>
+            <li>Tested with the real scanner and label printer at the staging station</li>
+            <li>UI matches the approved wireframe in the latest Chrome and Edge</li>
+            <li>No open critical or high bugs</li>
+            <li>API documentation and user guide updated</li>
+            <li>Accepted by the PO in the sprint review</li>
+          </ul>
+        </section>
+        <section>
+          <h3>Every release</h3>
+          <ul>
+            <li>Deployed to staging through CI/CD; full regression suite passes</li>
+            <li>UAT signed off by the QA pharmacist</li>
+            <li>Scan-to-label time of 10 seconds or less at the pilot station</li>
+            <li>Security scan shows no high-severity findings</li>
+            <li>Release notes published and rollback plan tested</li>
+          </ul>
+        </section>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 Kiki Novalia · PharmaOMS case study. Please ask before reusing any part of it.</span>
+    <span>All products, orders, people and serial numbers in the prototype are fictional.</span>
+  </div>
+</footer>
+
+<div class="copy-note" id="copy-note" role="status" aria-live="polite" hidden></div>
+<p class="print-note">This portfolio by Kiki Novalia is available online only. Please contact the author for a copy.</p>
+
+<script>
+(() => {
+'use strict';
+const $ = (s, el = document) => el.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* ---------- DataMatrix-style pattern (illustrative) ---------- */
+function hash(str){let h=2166136261;for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
+function rng(seed){let a=seed;return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function dmCells(seedStr, n){
+  const r = rng(hash(seedStr)); let d = '';
+  for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) {
+    let on;
+    if (x === 0 || y === n - 1) on = true;
+    else if (y === 0) on = x % 2 === 0;
+    else if (x === n - 1) on = y % 2 === 1;
+    else on = r() < 0.5;
+    if (on) d += `M${x} ${y}h1v1h-1z`;
+  }
+  return `<path d="${d}" fill="currentColor"/>`;
+}
+function dmSVG(seedStr, n = 16){ return `<svg viewBox="0 0 ${n} ${n}" shape-rendering="crispEdges" aria-hidden="true">${dmCells(seedStr, n)}</svg>`; }
+$('#hero-dm').innerHTML = dmCells('7KQ2M9XA4PLD', 18);
+
+/* ---------- Reference data ---------- */
+const ROLES = ['Admin','Supervisor','Operator','Auditor'];
+const PERMS = [
+  ['viewOrders','View orders'],
+  ['manageOrders','Create and import orders'],
+  ['serialize','Build cart, scan and print'],
+  ['reprint','Reprint labels'],
+  ['release','Release orders'],
+  ['viewAudit','View audit log'],
+  ['manageUsers','Manage users and roles'],
+];
+const DEFAULT_MATRIX = {
+  Admin:      {viewOrders:true, manageOrders:true,  serialize:false, reprint:false, release:false, viewAudit:true,  manageUsers:true},
+  Supervisor: {viewOrders:true, manageOrders:true,  serialize:true,  reprint:true,  release:true,  viewAudit:true,  manageUsers:false},
+  Operator:   {viewOrders:true, manageOrders:false, serialize:true,  reprint:true,  release:false, viewAudit:false, manageUsers:false},
+  Auditor:    {viewOrders:true, manageOrders:false, serialize:false, reprint:false, release:false, viewAudit:true,  manageUsers:false},
+};
+const PASSWORD = 'demo1234';
+const CATALOG = [
+  {gtin:'08991234500017', name:'Zopiclone 7.5 mg',   pack:'30 tablets',  batch:'B24-0912', exp:'2028-03-31'},
+  {gtin:'08991234500024', name:'Cetirizine 10 mg',   pack:'10 tablets',  batch:'B24-0731', exp:'2027-11-30'},
+  {gtin:'08991234500031', name:'Paracetamol 500 mg', pack:'100 tablets', batch:'B24-1002', exp:'2028-06-30'},
+  {gtin:'08991234500048', name:'Montelukast 10 mg',  pack:'28 tablets',  batch:'B24-0855', exp:'2028-01-31'},
+  {gtin:'08991234500055', name:'Bisoprolol 5 mg',    pack:'30 tablets',  batch:'B24-0640', exp:'2027-09-30'},
+  {gtin:'08991234500062', name:'Losartan 50 mg',     pack:'30 tablets',  batch:'B24-0977', exp:'2028-04-30'},
+  {gtin:'08991234500079', name:'Desogestrel 75 mcg', pack:'28 tablets',  batch:'B24-0718', exp:'2028-02-29'},
+  {gtin:'08991234500086', name:'Orlistat 120 mg',    pack:'42 capsules', batch:'B24-0899', exp:'2027-12-31'},
+  {gtin:'08991234500093', name:'Amlodipine 5 mg',    pack:'30 tablets',  batch:'B23-0311', exp:'2026-10-15'},
+];
+const byGtin = g => CATALOG.find(p => p.gtin === g);
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function lastDay(y, m){ return new Date(Date.UTC(y, m, 0)).getUTCDate(); }
+function fmtDate(iso){ const [y,m,d] = iso.split('-').map(Number); return `${d} ${MONTHS[m-1]} ${y}`; }
+function fmtExp(iso){ const [y,m,d] = iso.split('-').map(Number); return d === lastDay(y,m) ? `${MONTHS[m-1]} ${y}` : fmtDate(iso); }
+const ai17 = iso => iso.slice(2,4) + iso.slice(5,7) + iso.slice(8,10);
+function from17(s){ const y = 2000 + Number(s.slice(0,2)), m = Number(s.slice(2,4)); let d = Number(s.slice(4,6)); if (!d) d = lastDay(y,m); return `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`; }
+const code = (gtin, batch, exp) => `(01)${gtin}(10)${batch}(17)${ai17(exp)}`;
+function clock(){ const d = new Date(); return [d.getHours(), d.getMinutes(), d.getSeconds()].map(n => String(n).padStart(2,'0')).join(':'); }
+
+/* ---------- Serials ---------- */
+const ALPHA = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+let issued = new Set();
+function newSerial(){
+  for (;;) {
+    const buf = new Uint32Array(12);
+    (window.crypto || {}).getRandomValues ? crypto.getRandomValues(buf) : buf.forEach((_, i) => buf[i] = Math.floor(Math.random() * 4294967296));
+    let s = ''; for (const n of buf) s += ALPHA[n % ALPHA.length];
+    if (!issued.has(s)) { issued.add(s); return s; }
+  }
+}
+function mkLine(gtin, qty, labeled = 0){
+  const p = byGtin(gtin);
+  return { gtin, batch: p.batch, qty, serials: Array.from({length: qty}, (_, i) => ({ sn: newSerial(), status: i < labeled ? 'Labeled' : 'Reserved', reprints: 0 })) };
+}
+function mkOrder(id, dest, date, status, lines = []){ return { id, dest, date, status, cart: [], lines, scans: [], last: null, releasedBy: null, releasedAt: null }; }
+
+/* ---------- State ---------- */
+let S, UI, done;
+function seed(){
+  issued = new Set();
+  S = {
+    users: [
+      {id:'andi.p', name:'Andi Pratama',   role:'Admin',      active:true},
+      {id:'dewi.a', name:'Dewi Anggraini', role:'Supervisor', active:true},
+      {id:'rina.s', name:'Rina Susanti',   role:'Operator',   active:true},
+      {id:'budi.s', name:'Budi Santoso',   role:'Operator',   active:true},
+      {id:'maya.l', name:'Maya Lestari',   role:'Auditor',    active:true},
+      {id:'joko.h', name:'Joko Hartono',   role:'Operator',   active:false},
+    ],
+    matrix: JSON.parse(JSON.stringify(DEFAULT_MATRIX)),
+    failed: {}, lockedUntil: {},
+    orders: [
+      mkOrder('SFG00001', 'Hospital ABC', '2026-10-20', 'New'),
+      mkOrder('SFG00002', 'Apotek Sehat Sentosa', '2026-10-21', 'New'),
+      mkOrder('SFG00003', 'RS Medika Utama', '2026-10-21', 'Labeled', [mkLine('08991234500031', 6, 6), mkLine('08991234500024', 4, 4)]),
+      mkOrder('SFG00004', 'Klinik Prima', '2026-10-22', 'In progress', [mkLine('08991234500062', 5, 3), mkLine('08991234500055', 3, 0)]),
+      mkOrder('SFG00005', 'Hospital XYZ', '2026-10-18', 'Released', [mkLine('08991234500017', 4, 4), mkLine('08991234500086', 2, 2)]),
+      mkOrder('SFG00006', 'Apotek Kimia Jaya', '2026-10-23', 'New'),
+    ],
+    audit: [
+      {t:'07:41:02', user:'Rina Susanti', role:'Operator', action:'Signed in', detail:''},
+      {t:'07:55:40', user:'Dewi Anggraini', role:'Supervisor', action:'Orders imported', detail:'orders_2026-10-10.csv, 6 orders'},
+      {t:'08:20:13', user:'Budi Santoso', role:'Operator', action:'Serials generated', detail:'8 serials reserved for SFG00004'},
+      {t:'08:31:57', user:'Budi Santoso', role:'Operator', action:'Label printed', detail:'3 units of Losartan 50 mg, SFG00004'},
+      {t:'09:14:22', user:'Dewi Anggraini', role:'Supervisor', action:'Order released', detail:'SFG00005, 6 units'},
+    ],
+  };
+  const o5 = S.orders.find(o => o.id === 'SFG00005'); o5.releasedBy = 'Dewi Anggraini'; o5.releasedAt = '09:14';
+  const o4 = S.orders.find(o => o.id === 'SFG00004'); o4.last = { sn: o4.lines[0].serials[2].sn, gtin: o4.lines[0].gtin };
+  o4.scans = [{t:'08:31:57', ok:true, msg:`Losartan 50 mg · SN ${o4.lines[0].serials[2].sn}`}];
+  UI = { user:null, screen:'login', orderId:null, login:{u:'', p:'', err:''}, tab:'All', oq:'', pq:'', aq:'', pending:{},
+         scan:null, scanVal:'', reprintOpen:false, reason:'', panel:null, newOrder:{dest:'', date:'2026-10-24', err:''},
+         addUser:{name:'', id:'', role:'Operator', err:''}, printTick:0, lastAnim:0, focusScan:false };
+  done = new Set();
+}
+
+const can = p => !!(UI.user && S.matrix[UI.user.role] && S.matrix[UI.user.role][p]);
+const order = () => S.orders.find(o => o.id === UI.orderId);
+const unitsOf = o => o.lines.length ? o.lines.reduce((a, l) => a + l.qty, 0) : o.cart.reduce((a, c) => a + c.qty, 0);
+const labOf = l => l.serials.filter(s => s.status === 'Labeled').length;
+const labeledOf = o => o.lines.reduce((a, l) => a + labOf(l), 0);
+const reprintsOf = o => o.lines.reduce((a, l) => a + l.serials.reduce((b, s) => b + s.reprints, 0), 0);
+function audit(action, detail){ S.audit.push({ t: clock(), user: UI.user ? UI.user.name : 'Unknown user', role: UI.user ? UI.user.role : '', action, detail }); }
+function nextId(){ const n = Math.max(...S.orders.map(o => Number(o.id.slice(3)))) + 1; return 'SFG' + String(n).padStart(5, '0'); }
+
+/* ---------- Guide ---------- */
+const STEPS = [
+  ['login-op', 'Sign in as the Operator, rina.s', 'US-01'],
+  ['cart', 'Open order SFG00001 and add products to the cart', 'US-06'],
+  ['confirm', 'Confirm the cart to generate serial numbers', 'US-07'],
+  ['scan-ok', 'Scan a valid item and watch its label print', 'US-09 · US-10'],
+  ['scan-bad', 'Scan a wrong-batch or expiring item', 'US-09'],
+  ['reprint', 'Reprint a label with a reason', 'US-11'],
+  ['send', 'Label every unit and send the order for release', 'US-13'],
+  ['release', 'Sign in as the Supervisor, dewi.a, and release it', 'US-13'],
+  ['perm', 'Sign in as the Admin, andi.p, and change a permission', 'US-03'],
+];
+function tick(k){ done.add(k); }
+function renderGuide(){
+  $('#g-list').innerHTML = STEPS.map(([k, t, us]) => `<li class="${done.has(k) ? 'done' : ''}"><span>${esc(t)}<small>${us}</small></span></li>`).join('');
+  $('#g-count').textContent = `${done.size} of ${STEPS.length} done`;
+  $('#g-bar').style.width = (done.size / STEPS.length * 100) + '%';
+}
+
+let toastTimer;
+function toast(msg){ const t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 2600); }
+
+/* ---------- Icons ---------- */
+const ICON = {
+  orders: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2.5" y="2" width="11" height="12" rx="1.5"/><path d="M5 5.5h6M5 8h6M5 10.5h3.5"/></svg>',
+  users: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="6" cy="5.5" r="2.5"/><path d="M1.5 13.5c.6-2.3 2.3-3.5 4.5-3.5s3.9 1.2 4.5 3.5"/><path d="M10.5 3.2a2.4 2.4 0 0 1 0 4.6M12 10.3c1.2.5 2 1.6 2.5 3.2"/></svg>',
+  audit: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="5.5"/><path d="M8 5v3.2l2 1.3"/></svg>',
+  reports: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2.5 13.5h11M4.5 11V8M8 11V4.5M11.5 11V6.5"/></svg>',
+};
+
+/* ---------- Views ---------- */
+function loginView(){
+  const L = UI.login;
+  const quick = S.users.filter(u => ['rina.s','dewi.a','andi.p','maya.l'].includes(u.id));
+  return `<div class="login">
+    <form class="login-card" data-form="login" novalidate>
+      <p class="cap">PharmaOMS</p>
+      <h3>Sign in</h3>
+      <p class="muted" style="font-size:.86rem">Use the account your administrator created.</p>
+      <label for="lg-u">Username</label>
+      <input class="inp" id="lg-u" data-bind="login.u" value="${esc(L.u)}" autocomplete="off" spellcheck="false">
+      <label for="lg-p">Password</label>
+      <input class="inp" id="lg-p" type="password" data-bind="login.p" value="${esc(L.p)}" autocomplete="off">
+      ${L.err ? `<p class="alert bad" role="alert">${esc(L.err)}</p>` : ''}
+      <button class="btn pri block" type="submit" style="margin-top:6px">Sign in</button>
+    </form>
+    <div class="accts">
+      <p class="cap">Demo accounts · tap to sign in</p>
+      <div class="acct-list">${quick.map(u => `<button type="button" class="acct" data-act="quick" data-u="${u.id}"><b>${esc(u.name)}</b><span>${u.role} · ${u.id}</span></button>`).join('')}</div>
+    </div>
+  </div>`;
+}
+
+function shell(){
+  const items = [];
+  if (can('viewOrders')) items.push(['orders', 'Orders', ICON.orders]);
+  if (can('manageUsers')) items.push(['users', 'Users & roles', ICON.users]);
+  if (can('viewAudit')) items.push(['audit', 'Audit log', ICON.audit]);
+  const active = UI.screen === 'order' ? 'orders' : UI.screen;
+  const initials = UI.user.name.split(' ').map(w => w[0]).join('').slice(0, 2);
+  return `<div class="app">
+    <aside class="side">
+      <div class="brand"><i></i>PharmaOMS</div>
+      <nav class="nav" aria-label="App">
+        ${items.map(([k, t, ic]) => `<button type="button" data-act="nav" data-s="${k}" class="${active === k ? 'on' : ''}">${ic}<span>${t}</span></button>`).join('')}
+        ${can('viewAudit') ? `<button type="button" disabled title="Arrives in Release 2">${ICON.reports}<span>Reports</span><span class="tag">R2</span></button>` : ''}
+      </nav>
+      <div class="me"><div class="av">${esc(initials)}</div><div><b>${esc(UI.user.name)}</b><span>${UI.user.role}</span></div>
+        <button type="button" class="out" data-act="logout">Sign out</button></div>
+    </aside>
+    <section class="pane"><div class="pane-body">${screen()}</div></section>
+  </div>`;
+}
+
+function noAccess(){ return `<div class="card pad"><p class="alert warn"><b>No access</b>Your role does not include this area. An Admin can change role permissions.</p></div>`; }
+
+function screen(){
+  if (UI.screen === 'users') return can('manageUsers') ? usersView() : noAccess();
+  if (UI.screen === 'audit') return can('viewAudit') ? auditView() : noAccess();
+  if (!can('viewOrders')) return noAccess();
+  if (UI.screen === 'order' && order()) return orderView(order());
+  return ordersView();
+}
+
+const STATUS_CLASS = {'New':'st-new', 'In progress':'st-prog', 'Labeled':'st-lab', 'Released':'st-rel'};
+const pill = st => `<span class="pill ${STATUS_CLASS[st]}">${st === 'Labeled' ? 'Labeled · awaiting release' : st}</span>`;
+const pillShort = st => `<span class="pill ${STATUS_CLASS[st]}">${st}</span>`;
+const bar = (n, d) => `<div class="bar"><i style="width:${d ? Math.round(n / d * 100) : 0}%"></i></div>`;
+
+function ordersView(){
+  const tabs = ['All', 'New', 'In progress', 'Labeled', 'Released'];
+  const q = UI.oq.trim().toLowerCase();
+  const list = S.orders.filter(o => (UI.tab === 'All' || o.status === UI.tab) && (!q || o.id.toLowerCase().includes(q) || o.dest.toLowerCase().includes(q)));
+  return `
+    <div class="head"><div><h3>Orders</h3></div><span class="sp"></span>
+      ${can('manageOrders') ? `<button type="button" class="btn" data-act="panel" data-p="import">Import CSV</button><button type="button" class="btn pri" data-act="panel" data-p="new">+ New order</button>` : ''}
+    </div>
+    ${UI.panel === 'new' ? newOrderPanel() : ''}${UI.panel === 'import' ? importPanel() : ''}
+    <div class="toolbar">
+      <div class="tabs">${tabs.map(t => `<button type="button" class="tab ${UI.tab === t ? 'on' : ''}" data-act="tab" data-t="${t}">${t}<span class="n">${t === 'All' ? S.orders.length : S.orders.filter(o => o.status === t).length}</span></button>`).join('')}</div>
+      <span class="sp"></span>
+      <input class="inp search" id="o-q" type="search" data-search="oq" value="${esc(UI.oq)}" placeholder="Search order no. or destination" aria-label="Search orders">
+    </div>
+    <div class="card tscroll">
+      <table class="tbl"><thead><tr><th>Order</th><th>Destination</th><th class="hide-n">Delivery</th><th class="hide-n">Units</th><th>Labeled</th><th>Status</th><th class="hide-n"></th></tr></thead>
+      <tbody>${list.length ? list.map(o => { const u = unitsOf(o), l = labeledOf(o); return `<tr class="click" data-act="open" data-id="${o.id}" tabindex="0">
+        <td><b>${o.id}</b></td><td>${esc(o.dest)}<span class="sub show-n">${fmtDate(o.date)}</span></td><td class="hide-n">${fmtDate(o.date)}</td><td class="hide-n">${u || '–'}</td>
+        <td><div class="barcell">${bar(l, u)}<span class="mono">${l}/${u}</span></div></td><td>${pillShort(o.status)}</td>
+        <td class="hide-n" style="text-align:right"><button type="button" class="btn sm" data-act="open" data-id="${o.id}">Open</button></td></tr>`; }).join('')
+        : `<tr><td colspan="7"><div class="empty">No orders match this filter.</div></td></tr>`}</tbody></table>
+    </div>`;
+}
+
+function newOrderPanel(){
+  const N = UI.newOrder;
+  return `<form class="panel" data-form="newOrder" novalidate><h4>New order</h4>
+    <div class="form-grid">
+      <div class="fld"><label for="no-dest">Destination</label><input class="inp" id="no-dest" data-bind="newOrder.dest" value="${esc(N.dest)}" placeholder="e.g. RS Harapan Kita"></div>
+      <div class="fld"><label for="no-date">Requested delivery</label><input class="inp" id="no-date" type="date" data-bind="newOrder.date" value="${esc(N.date)}"></div>
+    </div>
+    ${N.err ? `<p class="alert bad">${esc(N.err)}</p>` : ''}
+    <div class="row-end"><button type="button" class="btn" data-act="panel" data-p="">Cancel</button><button type="submit" class="btn pri">Create order</button></div></form>`;
+}
+const IMPORT_ROWS = [['RS Harapan Kita', '2026-10-24'], ['Klinik Sejahtera', '2026-10-25']];
+function importPanel(){
+  return `<div class="panel"><h4>Import orders from CSV</h4>
+    <div class="file"><span>▤</span><span>orders_2026-10-11.csv · ${IMPORT_ROWS.length} orders</span></div>
+    <div class="tscroll"><table class="tbl"><thead><tr><th>destination</th><th>delivery_date</th></tr></thead><tbody>
+      ${IMPORT_ROWS.map(r => `<tr><td>${r[0]}</td><td class="mono">${r[1]}</td></tr>`).join('')}</tbody></table></div>
+    <div class="row-end"><button type="button" class="btn" data-act="panel" data-p="">Cancel</button><button type="button" class="btn pri" data-act="import">Import ${IMPORT_ROWS.length} orders</button></div></div>`;
+}
+
+function orderHead(o){
+  return `<div class="head"><div><button type="button" class="back" data-act="nav" data-s="orders">‹ Orders</button>
+      <h3>Order ${o.id} ${pill(o.status)}</h3></div><span class="sp"></span>
+    <div class="meta"><div><span class="cap">Requested delivery</span><b>${fmtDate(o.date)}</b></div><div><span class="cap">Destination</span><b>${esc(o.dest)}</b></div></div></div>`;
+}
+function orderView(o){
+  let body;
+  if (o.status === 'New') body = can('serialize') ? cartBuilder(o) : `<div class="card pad"><p class="alert info"><b>No cart yet</b>An Operator builds the cart for this order. Your role can view it only.</p></div>`;
+  else if (o.status === 'In progress') body = can('serialize') ? scanStation(o) : readOnlyProgress(o);
+  else body = review(o);
+  return orderHead(o) + body;
+}
+
+function cartBuilder(o){
+  const q = UI.pq.trim().toLowerCase();
+  const prods = CATALOG.filter(p => !q || p.name.toLowerCase().includes(q) || p.gtin.includes(q) || p.batch.toLowerCase().includes(q));
+  const total = o.cart.reduce((a, c) => a + c.qty, 0);
+  return `<div class="split">
+    <div class="card">
+      <div class="card-h"><h4>Products in stock</h4><span class="sp"></span><input class="inp search" id="p-q" type="search" data-search="pq" value="${esc(UI.pq)}" placeholder="Search name, GTIN or batch" aria-label="Search products"></div>
+      <div class="tscroll"><table class="tbl"><thead><tr><th>Product</th><th class="hide-n">GTIN</th><th class="hide-n">Batch</th><th>Expiry</th><th>Add to cart</th></tr></thead><tbody>
+      ${prods.map(p => { const short = p.exp < o.date; const n = UI.pending[p.gtin] || 1; return `<tr>
+        <td><b>${esc(p.name)}</b><span class="sub">${p.pack}</span><span class="sub show-n mono">${p.batch}</span></td><td class="mono hide-n">${p.gtin}</td><td class="mono hide-n">${p.batch}</td>
+        <td>${short ? `<span class="pill st-bad">${fmtExp(p.exp)}</span>` : fmtExp(p.exp)}</td>
+        <td>${short ? `<span class="sub" style="color:var(--bad)">Expires before delivery</span>` : `<div class="addrow"><div class="step"><button type="button" data-act="pend" data-g="${p.gtin}" data-d="-1" aria-label="Fewer ${esc(p.name)}">−</button><span>${n}</span><button type="button" data-act="pend" data-g="${p.gtin}" data-d="1" aria-label="More ${esc(p.name)}">+</button></div><button type="button" class="btn sm pri" data-act="add" data-g="${p.gtin}">Add</button></div>`}</td></tr>`; }).join('')
+        || `<tr><td colspan="5"><div class="empty">No product matches “${esc(UI.pq)}”.</div></td></tr>`}
+      </tbody></table></div>
+    </div>
+    <div class="card">
+      <div class="card-h"><h4>Cart</h4><span class="sp"></span><span class="muted" style="font-size:.82rem">${o.cart.length} line${o.cart.length === 1 ? '' : 's'} · ${total} unit${total === 1 ? '' : 's'}</span></div>
+      ${o.cart.length ? o.cart.map(c => { const p = byGtin(c.gtin); return `<div class="cart-line">
+        <div class="r"><b>${esc(p.name)}</b><span class="sp"></span><button type="button" class="x" data-act="cart-rm" data-g="${c.gtin}" aria-label="Remove ${esc(p.name)}">✕</button></div>
+        <div class="r"><div class="step"><button type="button" data-act="cart-q" data-g="${c.gtin}" data-d="-1" aria-label="Fewer">−</button><span>${c.qty}</span><button type="button" data-act="cart-q" data-g="${c.gtin}" data-d="1" aria-label="More">+</button></div><span class="sp"></span><span class="mono" style="font-size:.72rem;color:var(--muted)">${p.batch} · ${fmtExp(p.exp)}</span></div></div>`; }).join('')
+        : `<div class="empty">Add products from the list to start the cart.</div>`}
+      <div class="cart-foot">
+        <p class="muted" style="font-size:.8rem">${total ? `Confirm reserves ${total} unique serial number${total === 1 ? '' : 's'} for this order.` : 'The cart stays editable until you confirm.'}</p>
+        <button type="button" class="btn pri block" data-act="confirm" ${total ? '' : 'disabled'}>Confirm and generate serials</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function benchSamples(o){
+  const valid = o.lines.filter(l => labOf(l) < l.qty).map(l => { const p = byGtin(l.gtin); return {label: p.name, sub: l.batch, code: code(l.gtin, l.batch, p.exp), bad: false}; });
+  const bad = [];
+  const l0 = o.lines[0], l1 = o.lines[1] || o.lines[0];
+  bad.push({label: byGtin(l0.gtin).name, sub: 'Wrong batch B24-0815', code: code(l0.gtin, 'B24-0815', byGtin(l0.gtin).exp), bad: true});
+  bad.push({label: byGtin(l1.gtin).name, sub: 'Expires 12 Oct 2026', code: code(l1.gtin, 'B23-0207', '2026-10-12'), bad: true});
+  const other = CATALOG.find(p => !o.lines.some(l => l.gtin === p.gtin) && p.exp >= o.date);
+  if (other) bad.push({label: other.name, sub: 'Not in this cart', code: code(other.gtin, other.batch, other.exp), bad: true});
+  return valid.concat(bad);
+}
+
+function labelBlock(o){
+  if (!o.last) return `<div class="empty" style="padding:18px 8px">The first label appears here after a valid scan.</div>`;
+  const l = o.lines.find(x => x.gtin === o.last.gtin), p = byGtin(o.last.gtin);
+  return `<div class="minilabel ${UI.printTick !== UI.lastAnim ? 'printing' : ''}">
+    <div class="p">${esc(p.name)}</div>
+    <div class="c">${dmSVG(o.last.sn)}<div class="hri">
+      <div><b>(01)</b><span>${p.gtin}</span></div><div><b>(21)</b><span>${o.last.sn}</span></div>
+      <div><b>(10)</b><span>${l.batch}</span></div><div><b>(17)</b><span>${ai17(p.exp)}</span></div></div></div></div>`;
+}
+
+function reprintBlock(o){
+  if (!o.last) return '';
+  const s = o.lines.find(x => x.gtin === o.last.gtin).serials.find(x => x.sn === o.last.sn);
+  if (!can('reprint')) return `<p class="muted" style="font-size:.8rem">Your role cannot reprint labels.</p>`;
+  if (s.reprints >= 2) return `<p class="alert warn"><b>Reprint limit reached</b>Ask a supervisor. Approval arrives in Release 2.</p>`;
+  if (!UI.reprintOpen) return `<button type="button" class="btn block" data-act="rp-open">Reprint label…</button><p class="muted" style="font-size:.76rem;text-align:center">Same serial · reason required · ${s.reprints} of 2 used</p>`;
+  return `<div class="radios" role="radiogroup" aria-label="Reprint reason"><p class="cap">Reason</p>
+    ${['Damaged', 'Misprint', 'Printer jam'].map((r, i) => `<label for="rr-${i}"><input type="radio" id="rr-${i}" name="rr" data-act-change="reason" value="${r}" ${UI.reason === r ? 'checked' : ''}>${r}</label>`).join('')}</div>
+    <div class="row-end"><button type="button" class="btn sm" data-act="rp-cancel">Cancel</button><button type="button" class="btn sm pri" data-act="reprint" ${UI.reason ? '' : 'disabled'}>Reprint</button></div>`;
+}
+
+function linesTable(o){
+  return `<div class="card tscroll"><table class="tbl"><thead><tr><th>Cart line</th><th class="hide-n">Batch</th><th>Labeled</th><th class="hide-n"></th></tr></thead><tbody>
+    ${o.lines.map(l => { const n = labOf(l), p = byGtin(l.gtin); return `<tr><td><b>${esc(p.name)}</b><span class="sub show-n mono">${l.batch}</span></td><td class="mono hide-n">${l.batch}</td>
+      <td><div class="barcell">${bar(n, l.qty)}<b class="mono">${n} / ${l.qty}</b></div></td><td class="hide-n">${n === l.qty ? '<span class="pill st-rel">Done</span>' : ''}</td></tr>`; }).join('')}
+  </tbody></table></div>`;
+}
+
+function scanStation(o){
+  const total = unitsOf(o), n = labeledOf(o), complete = n === total;
+  const r = UI.scan;
+  return `<div class="station-grid">
+    <div class="col">
+      <div class="scanbox">
+        <label class="cap" for="scan-in">Scan item barcode</label>
+        <form class="scanrow" data-form="scan" novalidate><input class="inp" id="scan-in" data-bind="scanVal" value="${esc(UI.scanVal)}" placeholder="Scan, or paste a GS1 code and press Enter" autocomplete="off" spellcheck="false"><button type="submit" class="btn pri">Scan</button></form>
+        ${r ? `<div class="alert ${r.ok ? 'ok' : 'bad'}" role="status"><b>${r.ok ? '✓ ' : '✕ '}${esc(r.title)}</b>${esc(r.detail)}${r.extra ? `<br><span class="mono">${esc(r.extra)}</span>` : ''}</div>` : `<p class="muted" style="font-size:.84rem">Waiting for the scanner…</p>`}
+        ${complete ? `<p class="alert info"><b>All ${total} units are labeled</b>Send the order for release.</p>` : `<div class="bench"><p class="cap">Items on the bench · tap one to scan it</p>
+          <div class="chips">${benchSamples(o).map(b => `<button type="button" class="chip ${b.bad ? 'bad' : ''}" data-act="scan-code" data-code="${esc(b.code)}">${esc(b.label)}<small>${esc(b.sub)}</small></button>`).join('')}</div>
+          <div><button type="button" class="link" data-act="scan-all">Label all remaining units (demo shortcut)</button></div></div>`}
+      </div>
+      ${linesTable(o)}
+      <div class="card"><div class="card-h"><h4>Recent scans</h4></div><div class="log">
+        ${o.scans.length ? o.scans.slice(0, 6).map(s => `<div><span class="t">${s.t}</span><span class="dot" style="background:${s.ok ? 'var(--ok)' : 'var(--bad)'}"></span><span class="m">${esc(s.msg)}</span></div>`).join('') : `<div class="empty" style="display:block">No scans yet.</div>`}
+      </div></div>
+    </div>
+    <div class="col">
+      <div class="card pad" style="display:grid;gap:10px">
+        <span class="cap">Order progress</span>
+        <span class="big">${n} / ${total}</span>${bar(n, total)}
+        <button type="button" class="btn pri block" data-act="send" ${complete ? '' : 'disabled'}>Send for release</button>
+        ${complete ? '' : `<p class="muted" style="font-size:.76rem">Unlocks when every unit is labeled.</p>`}
+      </div>
+      <div class="card pad" style="display:grid;gap:10px">
+        <span class="cap">Last label</span>
+        ${labelBlock(o)}
+        ${reprintBlock(o)}
+      </div>
+    </div>
+  </div>`;
+}
+
+function readOnlyProgress(o){
+  return `<p class="alert info"><b>Read-only for your role</b>${labeledOf(o)} of ${unitsOf(o)} units are labeled so far.</p>${linesTable(o)}`;
+}
+
+function review(o){
+  const total = unitsOf(o);
+  const rows = [];
+  o.lines.forEach(l => { const p = byGtin(l.gtin); l.serials.forEach(s => rows.push(`<tr><td class="mono">${s.sn}</td><td>${esc(p.name)}</td><td class="mono hide-n">${l.batch}</td><td class="hide-n">${fmtExp(p.exp)}</td><td>${s.status}</td><td class="mono">${s.reprints}</td></tr>`)); });
+  return `${o.status === 'Released'
+      ? `<p class="alert ok"><b>Released for shipping</b>Released by ${esc(o.releasedBy)} at ${esc(o.releasedAt)}. ${total} units, every one serialized and labeled.</p>`
+      : `<p class="alert info"><b>All ${total} units are labeled</b>A supervisor reviews the serial register below and releases the order.</p>`}
+    <div class="meta" style="gap:28px"><div><span class="cap">Units</span><span class="big">${total}</span></div><div><span class="cap">Lines</span><span class="big">${o.lines.length}</span></div><div><span class="cap">Reprints</span><span class="big">${reprintsOf(o)}</span></div></div>
+    ${linesTable(o)}
+    <div class="card"><div class="card-h"><h4>Serial register</h4><span class="sp"></span><span class="muted" style="font-size:.8rem">${total} serials</span></div>
+      <div class="reg"><table class="tbl"><thead><tr><th>Serial (21)</th><th>Product</th><th class="hide-n">Batch</th><th class="hide-n">Expiry</th><th>Status</th><th>Reprints</th></tr></thead><tbody>${rows.join('')}</tbody></table></div></div>
+    ${o.status === 'Labeled' ? (can('release')
+      ? `<div class="row-end"><button type="button" class="btn pri" data-act="release">Release order</button></div>`
+      : `<p class="muted" style="font-size:.86rem">Waiting for a supervisor to release this order.</p>`) : ''}`;
+}
+
+function usersView(){
+  const A = UI.addUser;
+  return `<div class="head"><h3>Users &amp; roles</h3><span class="sp"></span><button type="button" class="btn pri" data-act="adduser">+ Add user</button></div>
+    ${UI.panel === 'user' ? `<form class="panel" data-form="addUser" novalidate><h4>Add user</h4><div class="form-grid">
+      <div class="fld"><label for="au-name">Full name</label><input class="inp" id="au-name" data-bind="addUser.name" value="${esc(A.name)}"></div>
+      <div class="fld"><label for="au-id">Username</label><input class="inp" id="au-id" data-bind="addUser.id" value="${esc(A.id)}" autocomplete="off"></div>
+      <div class="fld"><label for="au-role">Role</label><select class="inp" id="au-role" data-bind="addUser.role">${ROLES.map(r => `<option ${A.role === r ? 'selected' : ''}>${r}</option>`).join('')}</select></div></div>
+      ${A.err ? `<p class="alert bad">${esc(A.err)}</p>` : ''}
+      <p class="muted" style="font-size:.8rem">New users sign in with the demo password, demo1234.</p>
+      <div class="row-end"><button type="button" class="btn" data-act="panel" data-p="">Cancel</button><button type="submit" class="btn pri">Add user</button></div></form>` : ''}
+    <div class="users-grid">
+      <div class="card"><div class="card-h"><h4>Users</h4></div><div class="tscroll"><table class="tbl"><thead><tr><th>Name</th><th>Role</th><th>Status</th></tr></thead><tbody>
+        ${S.users.map(u => { const me = u.id === UI.user.id; return `<tr><td><b>${esc(u.name)}</b><span class="sub mono">${u.id}${me ? ' · you' : ''}</span></td>
+          <td><select class="sel" id="role-${u.id}" data-act-change="role" data-id="${u.id}" ${me ? 'disabled' : ''} aria-label="Role for ${esc(u.name)}">${ROLES.map(r => `<option ${u.role === r ? 'selected' : ''}>${r}</option>`).join('')}</select></td>
+          <td><button type="button" class="pill ${u.active ? 'st-rel' : 'st-new'}" style="border:0;cursor:${me ? 'default' : 'pointer'}" data-act="toggle-user" data-id="${u.id}" ${me ? 'disabled' : ''} title="${me ? '' : (u.active ? 'Deactivate' : 'Activate')}">${u.active ? 'Active' : 'Inactive'}</button></td></tr>`; }).join('')}
+      </tbody></table></div></div>
+      <div class="card"><div class="card-h"><h4>Role permissions</h4><span class="sp"></span><span class="muted" style="font-size:.78rem">Changes apply at once</span></div>
+        <div class="tscroll"><table class="tbl matrix"><thead><tr><th>Permission</th>${ROLES.map(r => `<th>${r}</th>`).join('')}</tr></thead><tbody>
+          ${PERMS.map(([k, label]) => `<tr><td>${label}</td>${ROLES.map(r => { const lock = r === 'Admin' && k === 'manageUsers'; return `<td><input type="checkbox" id="m-${r}-${k}" data-act-change="perm" data-r="${r}" data-k="${k}" ${S.matrix[r][k] ? 'checked' : ''} ${lock ? 'disabled title="Kept on so the Admin cannot lock everyone out"' : ''} aria-label="${r}: ${label}"></td>`; }).join('')}</tr>`).join('')}
+        </tbody></table></div>
+        <p class="muted pad" style="font-size:.78rem;padding-top:10px">Void serials, data export and serial format settings arrive in Release 2.</p></div>
+    </div>`;
+}
+
+function auditView(){
+  const q = UI.aq.trim().toLowerCase();
+  const list = S.audit.slice().reverse().filter(a => !q || [a.user, a.role, a.action, a.detail].join(' ').toLowerCase().includes(q));
+  return `<div class="head"><h3>Audit log</h3><span class="sp"></span><input class="inp search" id="a-q" type="search" data-search="aq" value="${esc(UI.aq)}" placeholder="Search user, action or detail" aria-label="Search audit log"></div>
+    <div class="card tscroll"><table class="tbl"><thead><tr><th>Time</th><th>User</th><th class="hide-n">Role</th><th>Action</th><th>Detail</th></tr></thead><tbody>
+      ${list.length ? list.map(a => `<tr><td class="mono">${a.t}</td><td>${esc(a.user)}</td><td class="hide-n">${esc(a.role)}</td><td><b>${esc(a.action)}</b></td><td class="muted">${esc(a.detail)}</td></tr>`).join('') : `<tr><td colspan="5"><div class="empty">No entries match.</div></td></tr>`}
+    </tbody></table></div>
+    <p class="muted" style="font-size:.8rem">Entries cannot be edited or deleted.</p>`;
+}
+
+/* ---------- Render ---------- */
+const app = $('#app');
+function render(){
+  const ae = document.activeElement;
+  const fid = ae && app.contains(ae) && ae.id ? ae.id : null;
+  let sel = null; try { if (fid && typeof ae.selectionStart === 'number') sel = [ae.selectionStart, ae.selectionEnd]; } catch (e) {}
+  app.innerHTML = UI.user ? shell() : loginView();
+  UI.lastAnim = UI.printTick;
+  if (UI.focusScan) { const el = $('#scan-in'); if (el) el.focus({preventScroll: true}); UI.focusScan = false; }
+  else if (fid) { const el = document.getElementById(fid); if (el) { el.focus({preventScroll: true}); try { if (sel) el.setSelectionRange(sel[0], sel[1]); } catch (e) {} } }
+  renderGuide();
+}
+function goPaneTop(){ const p = app.querySelector('.pane'); if (p) p.scrollTop = 0; }
+
+/* ---------- Actions ---------- */
+function signIn(uRaw, p){
+  const u = uRaw.trim().toLowerCase();
+  const L = UI.login;
+  if ((S.lockedUntil[u] || 0) > Date.now()) { L.err = 'This account is locked for 15 minutes after 5 failed attempts. Use Reset demo to unlock it.'; return render(); }
+  const user = S.users.find(x => x.id === u);
+  if (!user || p !== PASSWORD) {
+    S.failed[u] = (S.failed[u] || 0) + 1;
+    const left = 5 - S.failed[u];
+    if (left <= 0) { S.lockedUntil[u] = Date.now() + 15 * 60e3; S.failed[u] = 0; S.audit.push({t: clock(), user: u || '(blank)', role: '', action: 'Account locked', detail: '5 failed sign-in attempts'}); L.err = 'Too many failed attempts. This account is locked for 15 minutes.'; }
+    else L.err = `Invalid username or password. ${left} attempt${left === 1 ? '' : 's'} left before the account locks for 15 minutes.`;
+    L.p = ''; return render();
+  }
+  if (!user.active) { L.err = 'This account is deactivated. Contact your administrator.'; L.p = ''; return render(); }
+  S.failed[u] = 0;
+  UI.user = user; UI.screen = 'orders'; UI.orderId = null; UI.panel = null; UI.login = {u:'', p:'', err:''};
+  audit('Signed in', '');
+  if (user.role === 'Operator') tick('login-op');
+  render();
+}
+
+function setPath(path, v){ const [a, b] = path.split('.'); if (b) UI[a][b] = v; else UI[a] = v; }
+
+function openOrder(id){ UI.orderId = id; UI.screen = 'order'; UI.scan = null; UI.scanVal = ''; UI.reprintOpen = false; UI.reason = ''; UI.pq = ''; UI.lastAnim = UI.printTick;
+  const o = order(); if (o.status === 'In progress' && can('serialize')) UI.focusScan = true; render(); goPaneTop(); }
+
+function processScan(o, raw){
+  const c = raw.trim(); if (!c) return;
+  const g = (c.match(/\(01\)(\d{14})/) || [])[1] || (c.match(/^01(\d{14})/) || [])[1];
+  const b = (c.match(/\(10\)([A-Za-z0-9\-]+)/) || [])[1];
+  const e = (c.match(/\(17\)(\d{6})/) || [])[1];
+  let res;
+  const line = g && o.lines.find(l => l.gtin === g);
+  const p = g && byGtin(g);
+  if (!g || !b || !e) res = {ok:false, title:'Unreadable code', detail:'Scan the 2D code on the pack. It carries the product, batch and expiry.'};
+  else if (!line) res = {ok:false, title:'Product not in this cart', detail:`${p ? p.name : 'GTIN ' + g} is not part of order ${o.id}. Put it aside.`};
+  else if (from17(e) < o.date) res = {ok:false, title:'Expires before delivery', detail:`This pack expires ${fmtDate(from17(e))}; delivery is ${fmtDate(o.date)}.`};
+  else if (b !== line.batch) res = {ok:false, title:`Batch ${b} is not in this cart`, detail:`The cart expects batch ${line.batch} for ${p.name}.`};
+  else if (labOf(line) >= line.qty) res = {ok:false, title:'Quantity already reached', detail:`All ${line.qty} units of ${p.name} are labeled.`};
+  else {
+    const s = line.serials.find(x => x.status === 'Reserved'); s.status = 'Labeled';
+    o.last = {sn: s.sn, gtin: g}; UI.printTick++; UI.reprintOpen = false; UI.reason = '';
+    res = {ok:true, title:'Accepted', detail:`${p.name} · Batch ${b} · Exp ${fmtExp(from17(e))}`, extra:`Serial ${s.sn} assigned · label sent to printer`};
+    audit('Label printed', `${s.sn} · ${p.name} · ${o.id}`); tick('scan-ok');
+  }
+  if (!res.ok) { audit('Scan rejected', `${res.title} · ${o.id}`); tick('scan-bad'); }
+  o.scans.unshift({t: clock(), ok: res.ok, msg: res.ok ? `${p.name} · SN ${o.last.sn}` : res.title});
+  UI.scan = res; UI.scanVal = ''; UI.focusScan = true;
+  render();
+}
+
+app.addEventListener('click', ev => {
+  const el = ev.target.closest('[data-act]'); if (!el || !app.contains(el) || el.disabled) return;
+  const a = el.dataset.act, o = order();
+  switch (a) {
+    case 'quick': { const u = el.dataset.u; UI.login.u = u; signIn(u, PASSWORD); break; }
+    case 'logout': audit('Signed out', ''); UI.user = null; UI.screen = 'login'; UI.orderId = null; UI.panel = null; render(); break;
+    case 'nav': UI.screen = el.dataset.s; UI.orderId = null; UI.panel = null; render(); goPaneTop(); break;
+    case 'tab': UI.tab = el.dataset.t; render(); break;
+    case 'open': openOrder(el.dataset.id); break;
+    case 'panel': UI.panel = el.dataset.p || null; UI.newOrder.err = ''; UI.addUser.err = ''; render(); break;
+    case 'adduser': UI.panel = 'user'; UI.addUser = {name:'', id:'', role:'Operator', err:''}; render(); break;
+    case 'import': {
+      IMPORT_ROWS.forEach(r => S.orders.push(mkOrder(nextId(), r[0], r[1], 'New')));
+      audit('Orders imported', `orders_2026-10-11.csv, ${IMPORT_ROWS.length} orders`);
+      UI.panel = null; UI.tab = 'New'; render(); toast(`${IMPORT_ROWS.length} orders imported`); break;
+    }
+    case 'pend': { const g = el.dataset.g; UI.pending[g] = Math.max(1, Math.min(99, (UI.pending[g] || 1) + Number(el.dataset.d))); render(); break; }
+    case 'add': {
+      const g = el.dataset.g, n = UI.pending[g] || 1, c = o.cart.find(x => x.gtin === g);
+      if (c) c.qty = Math.min(999, c.qty + n); else o.cart.push({gtin: g, qty: n});
+      UI.pending[g] = 1; tick('cart'); render(); toast(`${n} × ${byGtin(g).name} added`); break;
+    }
+    case 'cart-q': { const c = o.cart.find(x => x.gtin === el.dataset.g); c.qty = Math.max(1, Math.min(999, c.qty + Number(el.dataset.d))); render(); break; }
+    case 'cart-rm': o.cart = o.cart.filter(x => x.gtin !== el.dataset.g); render(); break;
+    case 'confirm': {
+      if (!o.cart.length) break;
+      o.lines = o.cart.map(c => mkLine(c.gtin, c.qty)); const n = unitsOf(o); o.cart = []; o.status = 'In progress';
+      audit('Serials generated', `${n} serials reserved for ${o.id}`); tick('confirm');
+      UI.scan = null; UI.focusScan = true; render(); goPaneTop(); toast(`${n} unique serial numbers reserved`); break;
+    }
+    case 'scan-code': processScan(o, el.dataset.code); break;
+    case 'scan-all': {
+      let n = 0, lastS = null, lastG = null;
+      o.lines.forEach(l => l.serials.forEach(s => { if (s.status === 'Reserved') { s.status = 'Labeled'; n++; lastS = s; lastG = l.gtin; } }));
+      if (n) { o.last = {sn: lastS.sn, gtin: lastG}; UI.printTick++; audit('Label printed', `${n} units labeled with the demo shortcut · ${o.id}`); o.scans.unshift({t: clock(), ok: true, msg: `${n} units labeled (demo shortcut)`}); tick('scan-ok'); }
+      UI.scan = {ok:true, title:'All units labeled', detail:`${n} labels printed.`}; render(); break;
+    }
+    case 'rp-open': UI.reprintOpen = true; UI.reason = ''; render(); break;
+    case 'rp-cancel': UI.reprintOpen = false; UI.reason = ''; render(); break;
+    case 'reprint': {
+      if (!UI.reason) break;
+      const s = o.lines.find(x => x.gtin === o.last.gtin).serials.find(x => x.sn === o.last.sn);
+      s.reprints++; UI.printTick++;
+      audit('Label reprinted', `${s.sn} · ${UI.reason}`); o.scans.unshift({t: clock(), ok: true, msg: `Reprinted ${s.sn} · ${UI.reason.toLowerCase()}`});
+      tick('reprint'); UI.reprintOpen = false; UI.reason = ''; render(); toast('Label reprinted with the same serial'); break;
+    }
+    case 'send': {
+      if (labeledOf(o) !== unitsOf(o)) break;
+      o.status = 'Labeled'; audit('Sent for release', `${o.id}, ${unitsOf(o)} units`); tick('send');
+      render(); goPaneTop(); toast('Sent to the supervisor for release'); break;
+    }
+    case 'release': {
+      if (o.status !== 'Labeled' || !can('release')) break;
+      o.status = 'Released'; o.releasedBy = UI.user.name; o.releasedAt = clock().slice(0, 5);
+      audit('Order released', `${o.id}, ${unitsOf(o)} units`);
+      if (UI.user.role === 'Supervisor' && done.has('send')) tick('release');
+      render(); goPaneTop(); toast(`${o.id} released for shipping`); break;
+    }
+    case 'toggle-user': {
+      const u = S.users.find(x => x.id === el.dataset.id); if (!u || u.id === UI.user.id) break;
+      u.active = !u.active; audit(u.active ? 'User activated' : 'User deactivated', `${u.name} (${u.id})`);
+      render(); toast(`${u.name} ${u.active ? 'can sign in again' : 'can no longer sign in'}`); break;
+    }
+  }
+});
+
+app.addEventListener('keydown', ev => {
+  if (ev.key === 'Enter' && ev.target.matches('tr[data-act="open"]')) { ev.preventDefault(); openOrder(ev.target.dataset.id); }
+});
+
+app.addEventListener('input', ev => {
+  const el = ev.target;
+  if (el.dataset.bind) setPath(el.dataset.bind, el.value);
+  if (el.dataset.search) { UI[el.dataset.search] = el.value; render(); }
+});
+
+app.addEventListener('change', ev => {
+  const el = ev.target, a = el.dataset.actChange; if (!a) return;
+  if (a === 'reason') { UI.reason = el.value; render(); }
+  if (a === 'perm') {
+    const r = el.dataset.r, k = el.dataset.k; S.matrix[r][k] = el.checked;
+    const label = PERMS.find(p => p[0] === k)[1];
+    audit('Permission changed', `${r}: ${label} ${el.checked ? 'granted' : 'removed'}`);
+    if (UI.user.role === 'Admin') tick('perm');
+    render(); toast(`${r}: ${label.toLowerCase()} ${el.checked ? 'granted' : 'removed'}`);
+  }
+  if (a === 'role') {
+    const u = S.users.find(x => x.id === el.dataset.id); const was = u.role; u.role = el.value;
+    audit('Role changed', `${u.name}: ${was} → ${u.role}`); render(); toast(`${u.name} is now ${u.role}`);
+  }
+});
+
+app.addEventListener('submit', ev => {
+  ev.preventDefault();
+  const f = ev.target.dataset.form, o = order();
+  if (f === 'login') signIn(UI.login.u, UI.login.p);
+  if (f === 'scan') processScan(o, UI.scanVal);
+  if (f === 'newOrder') {
+    const N = UI.newOrder;
+    if (!N.dest.trim()) { N.err = 'Enter a destination.'; return render(); }
+    if (!N.date) { N.err = 'Choose a requested delivery date.'; return render(); }
+    const id = nextId(); S.orders.push(mkOrder(id, N.dest.trim(), N.date, 'New'));
+    audit('Order created', `${id} for ${N.dest.trim()}`);
+    UI.newOrder = {dest:'', date:'2026-10-24', err:''}; UI.panel = null; UI.tab = 'All'; render(); toast(`Order ${id} created`);
+  }
+  if (f === 'addUser') {
+    const A = UI.addUser, id = A.id.trim().toLowerCase();
+    if (!A.name.trim()) { A.err = 'Enter the person’s full name.'; return render(); }
+    if (!/^[a-z0-9._-]{3,}$/.test(id)) { A.err = 'Use at least 3 characters for the username: letters, digits, dot, dash or underscore.'; return render(); }
+    if (S.users.some(u => u.id === id)) { A.err = `The username ${id} is already taken.`; return render(); }
+    S.users.push({id, name: A.name.trim(), role: A.role, active: true});
+    audit('User added', `${A.name.trim()} (${id}) as ${A.role}`);
+    UI.panel = null; render(); toast(`${A.name.trim()} added as ${A.role}`);
+  }
+});
+
+$('#reset').addEventListener('click', () => { seed(); render(); toast('Demo reset'); });
+
+seed(); render();
+
+/* ---------- Backlog ---------- */
+const STORIES = [
+  ['US-01','Access','operator','log in with my username and password','only authorized staff can use the system','Must',3,'R1'],
+  ['US-02','Access','admin','create, edit and deactivate user accounts and assign each a role','access matches each person’s job','Must',5,'R1'],
+  ['US-03','Access','admin','define which actions each role may perform','sensitive actions like reprint stay restricted','Must',5,'R1'],
+  ['US-04','Orders','supervisor','create an order or import orders from a CSV file','packed orders are ready to serialize','Must',5,'R1'],
+  ['US-05','Orders','operator','search and filter orders by number, destination, delivery date and status','I can pick the next order to work on','Must',3,'R1'],
+  ['US-06','Orders','operator','add products to a serialization cart by GTIN, batch and quantity','I can serialize a full or partial order','Must',5,'R1'],
+  ['US-07','Serials','operator','get one unique serial number per unit when I confirm the cart','every item is traceable','Must',8,'R1'],
+  ['US-08','Serials','admin','configure the serial number format per product','serials meet regulator rules','Should',5,'R2'],
+  ['US-09','Scanning','operator','have each scanned item checked against the cart’s GTIN, batch and expiry','wrong or expiring items are stopped before labeling','Must',8,'R1'],
+  ['US-10','Labels','operator','have a label print automatically after a valid scan','I can label items without extra clicks','Must',8,'R1'],
+  ['US-11','Labels','operator','reprint a damaged label with a reason','the item keeps the same serial number','Must',3,'R1'],
+  ['US-12','Labels','supervisor','approve reprints and void unused serials','no serial number is ever used twice','Should',5,'R2'],
+  ['US-13','Release','supervisor','release an order only when every unit is labeled','incomplete orders never ship','Must',3,'R1'],
+  ['US-14','Compliance','auditor','see every sign-in, generation, print, reprint and release with user and time','we can prove compliance in an inspection','Must',5,'R1'],
+  ['US-15','Compliance','supervisor','export serialization data for a date range to CSV','I can share it with QA and the regulator','Should',3,'R2'],
+  ['US-16','Compliance','supervisor','see orders by status and items serialized per day','I can monitor throughput','Could',5,'R2'],
+  ['US-17','Integration','supervisor','receive orders from the ERP automatically','nobody re-keys order data','Should',8,'R2'],
+  ['US-18','Integration','supervisor','submit serialization data to the regulator’s reporting system','reporting is no longer manual','Should',8,'R3'],
+  ['US-19','Labels','admin','edit label templates (layout, fields, size)','labels change without a code release','Could',8,'R3'],
+  ['US-20','Serials','operator','link item serials to a carton label','receivers scan one carton instead of every item','Could',13,'R3'],
+];
+let blFilter = 'All';
+function renderBacklog(){
+  const opts = ['All','R1','R2','R3'], names = {All:'All', R1:'Release 1 · MVP', R2:'Release 2', R3:'Release 3'};
+  $('#bl-filter').innerHTML = opts.map(o => `<button type="button" class="tab ${blFilter === o ? 'on' : ''}" data-f="${o}" aria-pressed="${blFilter === o}">${names[o]}<span class="n">${o === 'All' ? STORIES.length : STORIES.filter(s => s[7] === o).length}</span></button>`).join('');
+  const list = STORIES.filter(s => blFilter === 'All' || s[7] === blFilter);
+  const pts = list.reduce((a, s) => a + s[6], 0);
+  $('#bl-sum').textContent = `${list.length} stories · ${pts} points`;
+  $('#bl-list').innerHTML = list.map(([id, epic, role, want, so, pr, sp, rel]) => `<div class="story">
+    <div class="id">${id}<span>${epic}</span></div>
+    <p>As ${/^[aeiou]/.test(role) ? 'an' : 'a'} <b>${role}</b>, I want to ${esc(want)}, so that ${esc(so)}.</p>
+    <div class="tags"><span class="tagb pr-${pr.toLowerCase()}">${pr}</span><span class="tagb">${sp} pt</span><span class="tagb">${rel}</span></div></div>`).join('');
+}
+$('#bl-filter').addEventListener('click', e => { const b = e.target.closest('[data-f]'); if (!b) return; blFilter = b.dataset.f; renderBacklog(); });
+renderBacklog();
+
+/* ---------- Acceptance criteria ---------- */
+const AC = [
+  ['US-01', 'Sign in', [
+    ['Valid sign-in', 'An active user with correct credentials', 'They submit the sign-in form', 'They land on Orders and see only the menus their role allows'],
+    ['Wrong credentials', 'A valid username and a wrong password', 'They submit the form', '“Invalid username or password” appears without saying which field is wrong'],
+    ['Lockout', '5 failed attempts in a row', 'The user tries again', 'The account is locked for 15 minutes and the event is written to the audit log'],
+    ['Session timeout', 'A signed-in user idle for 15 minutes', 'They perform any action', 'They are signed out and returned to the sign-in page'],
+  ]],
+  ['US-07', 'Generate serials', [
+    ['One serial per unit', 'A cart with 4 lines totalling 20 units', 'The operator clicks Confirm', '20 serials are created, each linked to its order, GTIN, batch and expiry, with status Reserved'],
+    ['Never repeated', 'Serials already issued for a GTIN, including voided ones', 'New serials are generated for that GTIN', 'No new serial matches any serial ever issued for it'],
+    ['Not guessable', 'The default serial format', 'Serials are generated', 'Each is 12 random alphanumeric characters, not sequential'],
+    ['All or nothing', 'Generation fails part-way', 'The error occurs', 'No serial is saved, the cart stays unconfirmed, and a retry message is shown'],
+  ]],
+  ['US-09', 'Scan and validate', [
+    ['Valid item', 'A confirmed cart', 'The operator scans an item whose GTIN and batch match an open cart line', 'The item is accepted, the next reserved serial is bound to it, and the line counter rises by 1'],
+    ['Wrong product or batch', 'A confirmed cart', 'The scanned GTIN or batch is not in the cart', 'The scan is rejected with a clear reason and no serial is used'],
+    ['Expires too soon', 'An order with a requested delivery date', 'The scanned expiry date is before the delivery date', 'The scan is rejected with “Expires before delivery”'],
+    ['Line complete', 'All units of a line are already labeled', 'Another item of that line is scanned', 'The scan is rejected with “Quantity already reached”'],
+  ]],
+  ['US-11', 'Reprint a label', [
+    ['Reprint with reason', 'A printed label', 'The operator chooses Reprint and a reason (damaged, misprint, printer jam)', 'The label prints again with the same serial number'],
+    ['Reason required', 'The reprint options are open', 'No reason is selected', 'The Reprint button stays disabled'],
+    ['Reprint limit', 'A label already reprinted twice', 'A third reprint is requested', 'It is blocked with “Ask a supervisor” until Release 2 adds approval (US-12)'],
+    ['Traceable', 'Any reprint', 'It completes', 'The audit log records user, time, serial number and reason'],
+  ]],
+];
+let acSel = 0;
+function renderAC(){
+  $('#ac-tabs').innerHTML = AC.map(([id, t], i) => `<button type="button" role="tab" id="ac-t${i}" aria-controls="ac-panel" aria-selected="${i === acSel}" tabindex="${i === acSel ? 0 : -1}" data-i="${i}"><b>${id}</b><span>${t}</span></button>`).join('');
+  $('#ac-panel').setAttribute('aria-labelledby', 'ac-t' + acSel);
+  $('#ac-panel').innerHTML = AC[acSel][2].map(([n, g, w, t]) => `<article class="scn"><h3>${esc(n)}</h3><dl class="gwt"><dt>Given</dt><dd>${esc(g)}</dd><dt>When</dt><dd>${esc(w)}</dd><dt>Then</dt><dd>${esc(t)}</dd></dl></article>`).join('');
+}
+$('#ac-tabs').addEventListener('click', e => { const b = e.target.closest('[data-i]'); if (!b) return; acSel = Number(b.dataset.i); renderAC(); $('#ac-t' + acSel).focus(); });
+$('#ac-tabs').addEventListener('keydown', e => {
+  if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+  acSel = (acSel + (e.key === 'ArrowRight' ? 1 : AC.length - 1)) % AC.length; renderAC(); $('#ac-t' + acSel).focus();
+});
+renderAC();
+
+/* ---------- Copy deterrent (form fields stay usable) ---------- */
+const NOTICE = 'Content © 2026 Kiki Novalia. Please ask before reusing this portfolio.';
+const editable = t => { const el = t && t.nodeType === 3 ? t.parentElement : t; return !!(el && el.closest && el.closest('input, textarea, select')); };
+const note = $('#copy-note'); let noteTimer;
+function showNote(){ note.textContent = 'Copying is disabled · © Kiki Novalia'; note.hidden = false; clearTimeout(noteTimer); noteTimer = setTimeout(() => { note.hidden = true; }, 2200); }
+['copy', 'cut'].forEach(type => document.addEventListener(type, e => {
+  if (editable(e.target)) return;
+  e.preventDefault();
+  try { if (e.clipboardData) e.clipboardData.setData('text/plain', NOTICE); } catch (err) {}
+  showNote();
+}));
+['contextmenu', 'dragstart', 'selectstart'].forEach(type => document.addEventListener(type, e => { if (!editable(e.target)) e.preventDefault(); }));
+document.addEventListener('keydown', e => {
+  if (!(e.ctrlKey || e.metaKey)) return;
+  const k = (e.key || '').toLowerCase();
+  if (['a', 'c', 'x'].includes(k) && editable(e.target)) return;
+  if (['a', 'c', 'x', 's', 'u', 'p'].includes(k)) { e.preventDefault(); if (k !== 'a') showNote(); }
+});
+})();
+</script>
+
+</body></html>
